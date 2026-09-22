@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>V-Guard 2031: Own the backbone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600;700&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F7F8; --surface:#FFFFFF; --panel:#E9ECEF; --ink:#1C2433; --muted:#566172; --rule:#D3D9E0;
+  --amber:#F5A11C; --amber-ink:#8A5300; --amber-soft:#FCEBCD;
+  --navy:#172338; --navy-2:#223352; --on-navy:#EEF1F6; --on-navy-muted:#AEB9CB;
+  --red:#C23B2E; --blue:#2E5C9E; --green:#3B7F45; --grey:#7A8494; --light:#C3C9D2;
+  --red-soft:#F6DEDB; --bar-total:#172338; --green-soft:#DDEEDF; --blue-soft:#DDE6F4;
+  --serif:"Bitter", Georgia, "Times New Roman", serif;
+  --sans:"Libre Franklin", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1726; --surface:#16213A; --panel:#1C2945; --ink:#E6EAF0; --muted:#A4AEBD; --rule:#2C3B58;
+    --amber-ink:#F5B447; --amber-soft:#3A2E17; --navy:#0B1220; --navy-2:#16213A;
+    --red-soft:#3A1F1E; --bar-total:#C9D2E0; --green-soft:#1B3322; --green:#62B06E; --red:#E0645A; --blue:#5B8BD0; --blue-soft:#1B2A45; --light:#43506A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1726; --surface:#16213A; --panel:#1C2945; --ink:#E6EAF0; --muted:#A4AEBD; --rule:#2C3B58;
+  --amber-ink:#F5B447; --amber-soft:#3A2E17; --navy:#0B1220; --navy-2:#16213A;
+  --red-soft:#3A1F1E; --bar-total:#C9D2E0; --green-soft:#1B3322; --green:#62B06E; --red:#E0645A; --blue:#5B8BD0; --blue-soft:#1B2A45; --light:#43506A;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px); scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:17px; line-height:1.6;
+  font-variant-numeric:tabular-nums lining-nums; -webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--serif); line-height:1.15; margin:0}
+h2{font-size:clamp(1.6rem,3.2vw,2.2rem); font-weight:600; letter-spacing:-.01em}
+h3{font-size:1.15rem; font-weight:600}
+p{margin:0 0 1em}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--amber); outline-offset:2px}
+.wrap{max-width:1120px; margin:0 auto; padding:0 22px}
+.prose{max-width:68ch}
+.muted{color:var(--muted)}
+.small{font-size:.86rem}
+
+/* header */
+header.top{position:sticky; top:0; z-index:20; background:var(--navy); color:var(--on-navy);
+  padding-top:env(safe-area-inset-top,0px); border-bottom:3px solid var(--amber)}
+header.top .wrap{display:flex; align-items:center; gap:22px; height:56px}
+.mark{font-family:var(--serif); font-weight:700; font-size:1.2rem; color:var(--amber); text-decoration:none; white-space:nowrap}
+.mark span{color:var(--on-navy); font-weight:500}
+nav.links{display:flex; gap:18px; overflow-x:auto; scrollbar-width:none; font-size:.9rem; flex:1}
+nav.links::-webkit-scrollbar{display:none}
+nav.links a{color:var(--on-navy-muted); text-decoration:none; white-space:nowrap; padding:4px 0}
+nav.links a:hover{color:var(--on-navy)}
+.theme-btn{background:none; border:1px solid var(--navy-2); color:var(--on-navy-muted); border-radius:6px; padding:5px 9px; font:inherit; font-size:.8rem; cursor:pointer}
+
+/* hero */
+.hero{background:var(--navy); color:var(--on-navy); padding:64px 0 72px}
+.hero .credit{color:var(--on-navy-muted); font-size:.92rem; margin-bottom:26px}
+.hero h1{font-size:clamp(2.8rem,8vw,5.4rem); font-weight:700; letter-spacing:-.02em; color:#fff}
+.hero .lede{font-size:clamp(1.1rem,2vw,1.3rem); max-width:40ch; margin:22px 0 34px; color:var(--on-navy); line-height:1.5}
+.hero-grid{display:grid; grid-template-columns:1.1fr 1fr; gap:48px; align-items:end}
+.choices{list-style:none; margin:0; padding:0; counter-reset:c}
+.choices li{counter-increment:c; display:grid; grid-template-columns:44px 1fr; gap:6px 14px; padding:16px 0; border-top:1px solid var(--navy-2)}
+.choices li::before{content:counter(c); font-family:var(--serif); font-weight:700; font-size:1.7rem; color:var(--amber); line-height:1}
+.choices b{display:block; font-family:var(--serif); font-weight:600; font-size:1.12rem; color:#fff}
+.choices span{color:var(--on-navy-muted); font-size:.95rem; grid-column:2}
+.cta{display:flex; flex-wrap:wrap; gap:12px}
+.btn{display:inline-block; font:inherit; font-weight:600; font-size:.95rem; padding:11px 18px; border-radius:6px; cursor:pointer; text-decoration:none; border:2px solid transparent}
+.btn-amber{background:var(--amber); color:#1C2433}
+.btn-amber:hover{background:#FFB43A}
+.btn-line{border-color:var(--on-navy-muted); color:var(--on-navy)}
+.btn-line:hover{border-color:#fff}
+.btn-quiet{background:transparent; border-color:var(--rule); color:var(--ink)}
+.btn-quiet:hover{border-color:var(--ink)}
+
+section.block{padding:76px 0; border-bottom:1px solid var(--rule)}
+section.block:last-of-type{border-bottom:none}
+.head{margin-bottom:28px}
+.head p{margin-top:12px; color:var(--muted); max-width:62ch}
+
+/* diagnosis */
+.diag{display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start}
+.pair{display:grid; gap:14px; margin-top:6px}
+.pair .row{display:grid; grid-template-columns:150px 1fr 64px; align-items:center; gap:12px; font-size:.95rem}
+.pair .bar{height:14px; border-radius:2px}
+.pair .val{text-align:right; font-weight:600}
+.facts{margin:26px 0 0; padding:0; list-style:none; border-top:1px solid var(--rule)}
+.facts li{display:flex; justify-content:space-between; gap:16px; padding:10px 0; border-bottom:1px solid var(--rule); font-size:.95rem}
+.facts li b{font-weight:600; white-space:nowrap}
+
+/* RTW panel */
+.panel{background:var(--panel); border-radius:10px; padding:28px; display:grid; grid-template-columns:330px 1fr; gap:34px}
+.meter-box{background:var(--surface); border-radius:8px; padding:20px 18px 18px; text-align:center; align-self:start; position:sticky; top:84px}
+.meter-box svg{width:100%; max-width:290px; height:auto; display:block; margin:0 auto}
+.needle{transform-origin:150px 150px; transition:transform .45s cubic-bezier(.3,1.4,.5,1)}
+@media (prefers-reduced-motion:reduce){.needle{transition:none}}
+.score-read{font-family:var(--serif); font-weight:700; font-size:3.2rem; line-height:1; margin-top:4px}
+.score-read small{font-size:1.1rem; color:var(--muted); font-weight:500}
+.verdict{display:inline-block; margin-top:12px; padding:6px 14px; border-radius:4px; font-weight:700; font-size:1.02rem; letter-spacing:.01em}
+.v-focus{background:var(--green-soft); color:var(--green)}
+.v-enter{background:var(--blue-soft); color:var(--blue)}
+.v-fix{background:var(--amber-soft); color:var(--amber-ink)}
+.v-harvest{background:var(--red-soft); color:var(--red)}
+.v-pilot{background:var(--panel); color:var(--muted); border:1px dashed var(--muted)}
+.why{font-size:.9rem; color:var(--muted); margin:12px 4px 0; text-align:left}
+.form label.fl{display:block; font-weight:600; font-size:.95rem; margin-bottom:6px}
+.form input[type=text], .form select{width:100%; font:inherit; padding:10px 12px; border:1px solid var(--rule); border-radius:6px; background:var(--surface); color:var(--ink)}
+.two{display:grid; grid-template-columns:1.4fr 1fr; gap:14px; margin-bottom:18px}
+.dim{background:var(--surface); border-radius:8px; padding:14px 16px 12px; margin-bottom:10px}
+.dim-top{display:flex; justify-content:space-between; align-items:baseline; gap:10px}
+.dim-top b{font-size:.98rem}
+.dim-top .pts{font-family:var(--serif); font-weight:700; font-size:1.15rem}
+.dim-top .pts small{color:var(--muted); font-weight:500; font-size:.85rem}
+.dim .hint,.ctrl .hint{font-size:.85rem; color:var(--muted); margin-top:4px; min-height:1.3em}
+input[type=range]{width:100%; accent-color:var(--amber); margin:8px 0 2px; height:26px}
+.actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:16px}
+.rule-note{font-size:.88rem; color:var(--muted); margin-top:14px}
+.mini-score{display:none; margin:14px 0 0; font-weight:600}
+.mini-score b{font-family:var(--serif); font-size:1.4rem}
+
+/* tables */
+.tbl-wrap{overflow-x:auto; margin-top:8px}
+table{border-collapse:collapse; width:100%; font-size:.93rem}
+th,td{padding:9px 10px; text-align:right; border-bottom:1px solid var(--rule); white-space:nowrap}
+th{font-weight:600; color:var(--muted); font-size:.84rem; border-bottom:2px solid var(--ink)}
+th:first-child,td:first-child{text-align:left; white-space:normal}
+tr.total td{font-weight:700; border-top:2px solid var(--ink); border-bottom:none}
+tbody tr.clickable{cursor:pointer}
+tbody tr.clickable:hover td{background:var(--surface)}
+.chip{display:inline-block; padding:2px 8px; border-radius:3px; font-weight:700; font-size:.8rem}
+.tag-src{font-size:.75rem; color:var(--muted); font-weight:500; margin-left:6px}
+.rm{background:none; border:none; color:var(--red); cursor:pointer; font:inherit; font-size:.82rem; text-decoration:underline; padding:0}
+.stress{display:grid; grid-template-columns:1fr auto; gap:18px; align-items:center; background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:16px 18px; margin-top:22px}
+.stress output{font-weight:600}
+
+/* charts */
+.chart{width:100%; height:auto; display:block}
+.chart text{font-family:var(--sans); fill:var(--ink)}
+.chart .axis{stroke:var(--rule)}
+.chart .lbl{fill:var(--muted); font-size:11px}
+.legend{display:flex; flex-wrap:wrap; gap:6px 18px; font-size:.86rem; margin-top:12px}
+.legend i{display:inline-block; width:12px; height:12px; border-radius:2px; margin-right:6px; vertical-align:-1px}
+.split{display:grid; grid-template-columns:1fr 1fr; gap:44px; align-items:start}
+.walk{list-style:none; padding:0; margin:0; border-top:1px solid var(--rule)}
+.walk li{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--rule); font-size:.95rem}
+.walk li.end{font-weight:700; border-bottom:2px solid var(--ink)}
+.pos{color:var(--green)} .neg{color:var(--red)}
+
+/* solar explorer */
+.explorer{display:grid; grid-template-columns:1fr 1.1fr; gap:34px; background:var(--panel); border-radius:10px; padding:28px}
+.ctrl{background:var(--surface); border-radius:8px; padding:14px 16px 10px; margin-bottom:10px}
+.ctrl .dim-top b{font-weight:600}
+.readout{background:var(--surface); border-radius:8px; padding:20px}
+.readout dl{margin:0; display:grid; grid-template-columns:1fr auto; gap:0}
+.readout dt,.readout dd{padding:8px 0; border-bottom:1px solid var(--rule); margin:0; font-size:.95rem}
+.readout dd{text-align:right; font-weight:600}
+.readout .big{font-family:var(--serif); font-size:1.5rem; font-weight:700}
+.lamps{display:grid; gap:8px; margin-top:18px}
+.lamp{display:flex; align-items:center; gap:10px; font-size:.92rem}
+.lamp i{width:14px; height:14px; border-radius:50%; flex:none; border:2px solid var(--ink)}
+.lamp.on i{background:var(--green); border-color:var(--green)}
+.lamp.off i{background:var(--red); border-color:var(--red)}
+.seg{display:inline-flex; border:1px solid var(--rule); border-radius:6px; overflow:hidden}
+.seg button{font:inherit; font-size:.88rem; padding:7px 13px; border:none; background:var(--surface); color:var(--ink); cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink); color:var(--bg); font-weight:600}
+
+/* dcf */
+.dcf-top{display:grid; grid-template-columns:1fr 1fr; gap:34px}
+.worth{display:grid; grid-template-columns:repeat(3,1fr); gap:0; border-top:2px solid var(--ink); margin-top:10px}
+.worth div{padding:16px 14px 16px 0; border-bottom:1px solid var(--rule)}
+.worth div + div{padding-left:14px; border-left:1px solid var(--rule)}
+.worth b{display:block; font-family:var(--serif); font-size:1.75rem; font-weight:700; line-height:1.1}
+.worth span{font-size:.85rem; color:var(--muted)}
+.grid5 td.hot{background:var(--amber-soft); font-weight:700}
+.grid5 td{text-align:center}
+.grid5 th{text-align:center}
+
+/* evidence */
+.evidence{display:grid; grid-template-columns:repeat(2,1fr); gap:0 44px}
+.ev{padding:18px 0; border-bottom:1px solid var(--rule); display:grid; grid-template-columns:120px 1fr; gap:16px; align-items:baseline}
+.ev b{font-family:var(--serif); font-weight:700; font-size:1.7rem; color:var(--amber-ink); line-height:1}
+.ev p{margin:0; font-size:.95rem}
+.ev small{display:block; color:var(--muted); font-size:.8rem; margin-top:3px}
+
+/* gates */
+.gates{list-style:none; padding:0; margin:0; display:grid; grid-template-columns:1fr 1fr; gap:0 44px}
+.gates li{padding:16px 0 16px 28px; border-bottom:1px solid var(--rule); position:relative; font-size:.95rem}
+.gates li::before{content:""; position:absolute; left:0; top:22px; width:14px; height:8px; border:2px solid var(--amber); border-radius:2px}
+.gates b{display:block; font-weight:600; margin-bottom:2px}
+
+/* faq */
+details{border-bottom:1px solid var(--rule)}
+details summary{cursor:pointer; list-style:none; padding:18px 36px 18px 0; font-family:var(--serif); font-weight:600; font-size:1.1rem; position:relative}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"+"; position:absolute; right:4px; top:14px; font-size:1.5rem; color:var(--amber-ink); font-family:var(--sans)}
+details[open] summary::after{content:"\2212"}
+details .ans{padding:0 0 20px; max-width:70ch}
+
+
+/* builder */
+.builder{display:grid; grid-template-columns:1.7fr 1fr; gap:30px; background:var(--panel); border-radius:10px; padding:26px; margin-bottom:34px}
+.bgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.toggle{display:flex; align-items:center; gap:10px; font-weight:600; font-size:.95rem; cursor:pointer}
+.toggle input{width:20px; height:20px; accent-color:var(--amber)}
+.delta{font-size:.82rem; font-weight:500; color:var(--muted); margin-left:6px}
+.delta.up{color:var(--green)} .delta.down{color:var(--red)}
+.builder .readout{position:sticky; top:84px; align-self:start}
+.pts{white-space:nowrap}
+.from-solar{font-size:.86rem; color:var(--muted); background:var(--surface); border-radius:8px; padding:12px 16px; grid-column:1/-1}
+/* checkers */
+.checkers{display:grid; grid-template-columns:1fr 1fr; gap:26px; margin-bottom:40px}
+.checker{background:var(--panel); border-radius:10px; padding:22px}
+.checker h3{margin-bottom:4px}
+.field{display:grid; grid-template-columns:1fr 130px; gap:12px; align-items:center; background:var(--surface); border-radius:6px; padding:10px 14px; margin-top:8px; font-size:.93rem}
+.field input[type=number]{font:inherit; width:100%; padding:7px 9px; border:1px solid var(--rule); border-radius:5px; background:var(--bg); color:var(--ink); text-align:right}
+.field select{font:inherit; padding:7px 9px; border:1px solid var(--rule); border-radius:5px; background:var(--bg); color:var(--ink)}
+.check{display:flex; gap:10px; align-items:flex-start; background:var(--surface); border-radius:6px; padding:10px 14px; margin-top:8px; font-size:.93rem; cursor:pointer}
+.check input{width:19px; height:19px; margin-top:2px; accent-color:var(--amber); flex:none}
+.decision{margin-top:14px; padding:14px 16px; border-radius:8px; font-size:.95rem}
+.decision b{display:block; font-family:var(--serif); font-size:1.15rem; margin-bottom:4px}
+.d-go{background:var(--green-soft); color:var(--ink)} .d-go b{color:var(--green)}
+.d-stop{background:var(--red-soft); color:var(--ink)} .d-stop b{color:var(--red)}
+.d-wait{background:var(--amber-soft); color:var(--ink)} .d-wait b{color:var(--amber-ink)}
+/* survey explorer */
+.sx{background:var(--panel); border-radius:10px; padding:24px; margin-top:34px}
+.sx-controls{display:grid; grid-template-columns:1fr 2fr 1.2fr; gap:12px; margin:14px 0 18px}
+.sx-controls label{display:block; font-weight:600; font-size:.88rem; margin-bottom:5px}
+.sx-controls select{width:100%; font:inherit; font-size:.92rem; padding:9px 10px; border:1px solid var(--rule); border-radius:6px; background:var(--surface); color:var(--ink)}
+.sx-out{background:var(--surface); border-radius:8px; padding:18px}
+.sx-q{font-family:var(--serif); font-weight:600; font-size:1.05rem; margin-bottom:12px}
+.dist{display:grid; grid-template-columns:minmax(120px,1.2fr) 2fr 70px 46px; gap:8px 12px; align-items:center; font-size:.92rem}
+.dist .b{height:12px; background:var(--amber); border-radius:2px; min-width:1px}
+.dist .n{text-align:right; color:var(--muted)} .dist .p{text-align:right; font-weight:600}
+@media (max-width:900px){.builder,.checkers,.bgrid,.sx-controls{grid-template-columns:1fr} .builder{padding:18px} .builder .readout{position:static}}
+@media (max-width:560px){.dist{grid-template-columns:1fr 1fr 58px}.dist .n{display:none}.field{grid-template-columns:1fr 110px}}
+
+.dcf-top>*,.split>*,.explorer>*,.builder>*,.panel>*,.checkers>*,.diag>*,.hero-grid>*,.bgrid>*{min-width:0}
+footer{background:var(--navy); color:var(--on-navy-muted); padding:40px 0 48px; font-size:.86rem}
+footer p{max-width:80ch}
+footer b{color:var(--on-navy)}
+
+@media (max-width:900px){
+  .hero-grid,.diag,.split,.dcf-top,.explorer,.evidence,.gates{grid-template-columns:1fr}
+  .panel{grid-template-columns:1fr; padding:18px}
+  .meter-box{position:static}
+  .mini-score{display:block}
+  .explorer{padding:18px}
+  .hero{padding:44px 0 52px}
+}
+@media (max-width:560px){
+  body{font-size:16px}
+  .wrap{padding:0 16px}
+  .two{grid-template-columns:1fr}
+  .worth{grid-template-columns:1fr}
+  .worth div + div{padding-left:0; border-left:none}
+  .ev{grid-template-columns:92px 1fr}
+  .pair .row{grid-template-columns:110px 1fr 56px}
+  .stress{grid-template-columns:1fr}
+  nav.links{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="mark" href="#top">V-Guard <span>2031</span></a>
+    <nav class="links" aria-label="Sections">
+      <a href="#diagnosis">Diagnosis</a><a href="#rtw">Right-to-Win</a><a href="#fy31">How FY31 adds up</a>
+      <a href="#solar">Solar engine</a><a href="#returns">Returns</a><a href="#worth">Valuation</a>
+      <a href="#evidence">Research</a><a href="#gates">Gates</a><a href="#questions">Questions</a>
+    </nav>
+    <button class="theme-btn" id="themeBtn" type="button">Dark mode</button>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="wrap">
+    <p class="credit">A business plan by Team GuardHellites, IIM Lucknow, for the V-Guard Big Idea competition 2026.</p>
+    <div class="hero-grid">
+      <div>
+        <h1>Own the backbone.</h1>
+        <p class="lede">V-Guard doesn't have too many categories. It lets too many of them spend capital before they've earned it. This plan puts every business through one test, and uses that test to make three choices.</p>
+        <div class="cta">
+          <a class="btn btn-amber" href="#rtw">Score a category</a>
+          <a class="btn btn-line" href="#fy31">See how FY31 adds up</a>
+        </div>
+      </div>
+      <ol class="choices">
+        <li><b>Premiumise the core</b><span>Wires, switchgear, fans and water heaters, sold through the electrician who picks the brand in 63% of jobs.</span></li>
+        <li><b>Own the energy backbone</b><span>Supply the inverter, cable and switchgear kit to every solar installer, rather than becoming one more of 20,000 installers.</span></li>
+        <li><b>Make every business earn capital</b><span>A published 100-point test decides where money goes, and it applies to Sunflame as strictly as to solar.</span></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="diagnosis">
+  <div class="wrap">
+    <div class="head"><h2>Growth that didn't pay for itself</h2></div>
+    <div class="diag">
+      <div class="prose">
+        <p>In FY26 V-Guard's revenue grew 7.0% to ₹5,966 crore. EBITDA grew 2.6%. Revenue was running ahead of the profit it was meant to produce.</p>
+        <p>The pattern shows up across the business. Plants ran at 59% of capacity while ₹174 crore went into new capex. Electricals grew 13.4%, mostly because copper got more expensive. Consumer Durables brought in ₹1,616 crore of revenue and ₹26 crore of profit.</p>
+        <p>A weak summer explains FY26. It doesn't explain why the same segment earned only 3.4% and 4.2% in the two years before.</p>
+      </div>
+      <div>
+        <div class="pair" aria-label="FY26 growth comparison">
+          <div class="row"><span>Revenue growth</span><div class="bar" style="background:var(--blue); width:100%"></div><span class="val">7.0%</span></div>
+          <div class="row"><span>EBITDA growth</span><div class="bar" style="background:var(--red); width:37%"></div><span class="val">2.6%</span></div>
+        </div>
+        <ul class="facts">
+          <li><span>Average capacity utilisation</span><b>59%</b></li>
+          <li><span>Consumer Durables revenue / profit</span><b>₹1,616 Cr / ₹26 Cr</b></li>
+          <li><span>Consumer Durables margin, FY24 and FY25</span><b>3.4% and 4.2%</b></li>
+          <li><span>FY26 capex</span><b>₹174 Cr</b></li>
+        </ul>
+        <p class="small muted" style="margin-top:12px">Source: V-Guard Integrated Annual Report 2025–26.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="rtw">
+  <div class="wrap">
+    <div class="head">
+      <h2>Score a category</h2>
+      <p>This is the Right-to-Win test from the report. Name any category, set the five scores, and the meter gives the verdict using the same thresholds the plan uses. Add it to the board to compare it with the thirteen we scored.</p>
+    </div>
+
+    <div class="panel">
+      <div class="meter-box" aria-live="polite">
+        <svg viewBox="-14 -6 328 191" role="img" aria-label="Right-to-Win score meter">
+          <path d="M 40 150 A 110 110 0 0 1 167.2 41.4" fill="none" style="stroke:var(--red)" stroke-width="16" />
+          <path d="M 167.2 41.4 A 110 110 0 0 1 227.8 72.2" fill="none" style="stroke:var(--amber)" stroke-width="16" />
+          <path d="M 227.8 72.2 A 110 110 0 0 1 260 150" fill="none" style="stroke:var(--green)" stroke-width="16" />
+          <g id="ticks"></g>
+          <g class="needle" id="needle">
+            <line x1="150" y1="150" x2="150" y2="52" style="stroke:var(--ink)" stroke-width="3" stroke-linecap="round"/>
+          </g>
+          <circle cx="150" cy="150" r="9" style="fill:var(--ink)"/>
+          <circle cx="150" cy="150" r="3" style="fill:var(--amber)"/>
+        </svg>
+        <div class="score-read"><span id="total">0</span><small> / 100</small></div>
+        <div class="verdict" id="verdict">—</div>
+        <p class="why" id="why"></p>
+      </div>
+
+      <div class="form">
+        <div class="two">
+          <div><label class="fl" for="catName">Category</label><input type="text" id="catName" placeholder="For example: smart home controls" autocomplete="off"></div>
+          <div><label class="fl" for="position">V-Guard's position today</label>
+            <select id="position">
+              <option value="est">Established</option>
+              <option value="new">Small or no position</option>
+            </select>
+          </div>
+        </div>
+        <div id="dims"></div>
+        <p class="mini-score" id="miniScore" aria-hidden="true"></p>
+        <div class="actions">
+          <button class="btn btn-amber" type="button" id="addBtn">Add to the board</button>
+          <button class="btn btn-quiet" type="button" id="clearBtn">Start a new category</button>
+        </div>
+        <p class="rule-note">Verdicts: 75 or above is FOCUS for an established business and ENTER for a new one. 55 to 74 is FIX, with a 24-month path to clear the bar. Below 55 is HARVEST for an established business; a new category gets PILOT ONLY, which means no capital for scale.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:44px">The board</h3>
+    <p class="small muted" style="margin:6px 0 0">Select a row to load it into the meter. Categories you add are saved in this browser only.</p>
+    <div class="tbl-wrap">
+      <table id="board">
+        <thead><tr><th>Category</th><th>Financial</th><th>Right to win</th><th>Market</th><th>Adjacency</th><th>Resilience</th><th>Total</th><th>Verdict</th><th id="stressHead">At 25%</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="stress">
+      <div>
+        <label class="fl" for="rtwW" style="font-weight:600">Stress the weights: move right-to-win between 20% and 30%</label>
+        <input type="range" id="rtwW" min="20" max="30" step="0.5" value="25" aria-describedby="stressOut">
+        <div class="small muted">The other four weights scale to keep the total at 100.</div>
+      </div>
+      <output id="stressOut" for="rtwW"></output>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="fy31">
+  <div class="wrap">
+    <div class="head">
+      <h2>How FY31 adds up</h2>
+      <p>FY26 revenue is split into pools that don't overlap, and each pool is grown once. That keeps any rupee from being counted twice.</p>
+    </div>
+
+    <div class="builder" id="builder">
+      <div>
+        <h3>Build your own FY31</h3>
+        <p class="small muted" style="margin:4px 0 14px">Change any lever. Revenue, margin, return on capital and the bridge below all recalculate with the model's own formulas.</p>
+        <div class="bgrid">
+          <div class="ctrl"><div class="dim-top"><b>Core volume growth</b><span class="pts" id="bo_core"></span></div>
+            <input type="range" id="b_core" min="6" max="16" step="0.5" value="12" aria-label="Core volume growth"><div class="hint">A year. Plan 12.0%, built category by category.</div></div>
+          <div class="ctrl"><div class="dim-top"><b>Premium mix gain</b><span class="pts" id="bo_prem"></span></div>
+            <input type="range" id="b_prem" min="0" max="15" step="1" value="9" aria-label="Premium mix gain in points"><div class="hint">Plan 9 points of mix at a 43% price uplift.</div></div>
+          <div class="ctrl"><div class="dim-top"><b>Inverter and battery growth</b><span class="pts" id="bo_bk"></span></div>
+            <input type="range" id="b_bk" min="0" max="150" step="5" value="100" aria-label="Inverter and battery growth versus plan"><div class="hint">Share of the planned ₹651 crore increase.</div></div>
+          <div class="ctrl"><div class="dim-top"><b>Sunflame in FY31</b><span class="pts" id="bo_sun"></span></div>
+            <input type="range" id="b_sun" min="250" max="750" step="10" value="750" aria-label="Sunflame FY31 revenue"><div class="hint">Plan ₹750 crore; ₹250 crore means no recovery.</div></div>
+          <div class="ctrl"><div class="dim-top"><b>Service contracts</b><span class="pts" id="bo_svc"></span></div>
+            <input type="range" id="b_svc" min="0" max="20" step="1" value="10" aria-label="Service contract attachment"><div class="hint">Attachment. Plan 10% of 14 million serviceable units.</div></div>
+          <div class="ctrl"><div class="dim-top"><b>Plant utilisation</b><span class="pts" id="bo_util"></span></div>
+            <input type="range" id="b_util" min="59" max="85" step="1" value="78" aria-label="Plant utilisation"><div class="hint">In FY31, from 59% today. Plan 78% is worth 130 bps.</div></div>
+          <label class="ctrl toggle"><input type="checkbox" id="b_store" checked> Home storage launches from FY30 (₹202 crore)</label>
+          <div class="from-solar">Solar components come from the funnel in <a href="#solar">the solar engine</a>, currently <b id="bo_solar"></b>. Move those sliders and this updates too.</div>
+        </div>
+        <button class="btn btn-quiet" type="button" id="b_reset" style="margin-top:14px">Reset every lever to plan</button>
+      </div>
+      <div class="readout" aria-live="polite">
+        <dl>
+          <dt>FY31 revenue</dt><dd class="big" id="bb_rev"></dd>
+          <dt>Growth a year</dt><dd id="bb_cagr"></dd>
+          <dt>EBITDA margin</dt><dd id="bb_m"></dd>
+          <dt>EBITDA</dt><dd id="bb_ebitda"></dd>
+          <dt>EBIT</dt><dd id="bb_ebit"></dd>
+          <dt>Capital employed</dt><dd id="bb_ce"></dd>
+          <dt>ROCE</dt><dd class="big" id="bb_roce"></dd>
+        </dl>
+        <div class="lamps" id="bb_lamp"></div>
+        <p class="small muted" id="bb_note" style="margin:12px 0 0"></p>
+      </div>
+    </div>
+    <svg class="chart" id="bridge" viewBox="0 0 900 330" role="img" aria-label="Revenue bridge from FY26 to FY31"></svg>
+    <p class="small muted" id="bridgeNote">₹ crore. At plan, core volume growth is built category by category: wires at 14.2%, switchgear at 15.5%, stabilisers held to 4.8% and run for cash.</p>
+
+    <div class="split" style="margin-top:44px">
+      <div>
+        <h3>Revenue by engine</h3>
+        <svg class="chart" id="stack" viewBox="0 0 520 300" role="img" aria-label="Revenue by engine, FY26 to FY31"></svg>
+        <div class="legend" id="stackLegend"></div>
+      </div>
+      <div>
+        <h3>EBITDA margin, FY26 to FY31</h3>
+        <ul class="walk" style="margin-top:14px">
+          <li><span>FY26 margin</span><span>8.8%</span></li>
+          <li><span>Plants run fuller (59% to 78%)</span><span class="pos">+130 bps</span></li>
+          <li><span>Premium mix</span><span class="pos">+79 bps</span></li>
+          <li><span>Fewer SKUs</span><span class="pos">+60 bps</span></li>
+          <li><span>Sunflame recovery</span><span class="pos">+50 bps</span></li>
+          <li><span>Components and backup mix</span><span class="pos">+60 bps</span></li>
+          <li><span>Growth investment</span><span class="neg">−30 bps</span></li>
+          <li class="end"><span>FY31 margin</span><span>12.3%</span></li>
+        </ul>
+        <p class="small muted" style="margin-top:12px">The premium figure is computed, not assumed: ₹549 crore moves to premium SKUs at a 43% price uplift and 9 points more gross margin, net of trade spend, adding ₹87 crore of EBITDA.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:44px">Projected P&amp;L (₹ crore)</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>FY26</th><th>FY27</th><th>FY28</th><th>FY29</th><th>FY30</th><th>FY31</th></tr></thead>
+        <tbody id="pl"></tbody>
+      </table>
+    </div>
+    <p class="small muted" style="margin-top:10px">FY26 is disclosed. Revenue compounds at 13.2% to FY31. That's below management's ambition of 15%, on purpose: the target is return on capital, not revenue.</p>
+  </div>
+</section>
+
+<section class="block" id="solar">
+  <div class="wrap">
+    <div class="head">
+      <h2>The solar engine</h2>
+      <p>V-Guard already makes three of the parts every rooftop installer has to buy. The Core Kit sells them as one warranted unit: string inverter, DC and AC cable, and protection and switchgear, at ₹24,000 for a 3 kW system. That's 16% of an installed system's cost, and 4.3% above a comparable imported bundle.</p>
+    </div>
+
+    <div class="explorer">
+      <div>
+        <h3 style="margin-bottom:6px">Try the funnel</h3>
+        <p class="small muted" style="margin-bottom:16px">Move the three assumptions a judge is most likely to question. Commercial systems (₹144 crore) and replacement inverters (₹79 crore) stay at plan.</p>
+        <div class="ctrl"><div class="dim-top"><b>Active installer accounts in FY31</b><span class="pts" id="o_active"></span></div>
+          <input type="range" id="s_active" min="500" max="3000" step="50" value="2000" aria-label="Active installer accounts">
+          <div class="hint">Plan: 2,000, out of about 7,000 professional installers left after the subsidy tapers.</div></div>
+        <div class="ctrl"><div class="dim-top"><b>Residential systems per account a year</b><span class="pts" id="o_sys"></span></div>
+          <input type="range" id="s_sys" min="100" max="200" step="5" value="150" aria-label="Systems per account">
+          <div class="hint">Plan: 150, below the survey average of 162.</div></div>
+        <div class="ctrl"><div class="dim-top"><b>V-Guard's share of each account's installs</b><span class="pts" id="o_wallet"></span></div>
+          <input type="range" id="s_wallet" min="20" max="70" step="1" value="45" aria-label="Share of wallet">
+          <div class="hint">Plan: 45%. Installers buy from more than one supplier; this is the number to push on first.</div></div>
+        <button class="btn btn-quiet" type="button" id="solarReset" style="margin-top:6px">Reset to plan</button>
+      </div>
+      <div class="readout" aria-live="polite">
+        <dl>
+          <dt>Residential Core Kits</dt><dd id="r_kits"></dd>
+          <dt>FY31 solar-component revenue</dt><dd class="big" id="r_solar"></dd>
+          <dt>Share of the FY31 component market (₹7,710 Cr)</dt><dd id="r_share"></dd>
+          <dt>Solar segment EBIT margin</dt><dd id="r_sebit"></dd>
+          <dt>Solar segment ROCE</dt><dd id="r_sroce"></dd>
+          <dt>V-Guard FY31 revenue, with your other levers</dt><dd id="r_rev"></dd>
+          <dt>V-Guard FY31 ROCE</dt><dd class="big" id="r_roce"></dd>
+        </dl>
+        <div class="lamps" id="lamps"></div>
+      </div>
+    </div>
+
+    <div class="split" style="margin-top:44px">
+      <div>
+        <h3>Core Kit, per 3 kW system (₹)</h3>
+        <p class="small muted" style="margin:4px 0 0">Per-system economics. The funnel above stays at the plan price of ₹24,000.</p>
+        <div style="margin:12px 0 4px"><span class="small muted" style="margin-right:10px">Five-year claim rate</span>
+          <span class="seg" role="group" aria-label="Claim rate">
+            <button type="button" data-claim="0.06" aria-pressed="false">6%</button>
+            <button type="button" data-claim="0.09" aria-pressed="true">9% plan</button>
+            <button type="button" data-claim="0.13" aria-pressed="false">13%</button>
+          </span></div>
+        <div class="ctrl" style="margin-top:12px"><div class="dim-top"><b>Kit selling price</b><span class="pts" id="o_asp"></span></div>
+          <input type="range" id="s_asp" min="22000" max="26500" step="250" value="24000" aria-label="Kit selling price"><div class="hint" id="h_asp"></div></div>
+        <div class="tbl-wrap"><table><tbody id="unit"></tbody></table></div>
+        <div class="lamps" id="unitLamps"></div>
+      </div>
+      <div>
+        <h3>Where the ₹547 crore comes from</h3>
+        <ul class="walk" style="margin-top:14px">
+          <li><span>2,000 accounts × 150 systems × 45% × ₹24,000</span><span>₹324 Cr</span></li>
+          <li><span>3,000 commercial systems × 60 kW × ₹8,000 per kW</span><span>₹144 Cr</span></li>
+          <li><span>48,000 replacement inverters × ₹16,500</span><span>₹79 Cr</span></li>
+          <li class="end"><span>FY31 solar components</span><span>₹547 Cr</span></li>
+        </ul>
+        <p class="small muted" style="margin-top:12px">The FY31 market is rebuilt without subsidised volume: 1.8 million homes, 3 GW of commercial rooftop and 0.6 million replacement inverters, ₹7,710 crore in all. The bear case is ₹5,140 crore; the bull case is ₹10,280 crore. V-Guard already sells about ₹120 crore of solar components, so the bridge counts only the ₹427 crore increase.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="returns">
+  <div class="wrap">
+    <div class="head">
+      <h2>Returns, and what happens when things go wrong</h2>
+      <p>The commitment is return on capital above 24%. Most of the new revenue fills plants that already exist, so ₹5,111 crore of extra sales needs only ₹1,153 crore of extra capital, 4.4 times.</p>
+    </div>
+    <div class="split">
+      <div>
+        <h3>ROCE in FY31, by scenario</h3>
+        <svg class="chart" id="roceChart" viewBox="0 0 520 300" role="img" aria-label="ROCE by scenario against the 24% floor"></svg>
+      </div>
+      <div>
+        <h3>The integrated downside</h3>
+        <p class="small muted" style="margin:6px 0 10px">Six things go wrong together. Utilisation and SKU gains are kept because they depend on V-Guard, not the market.</p>
+        <ul class="walk">
+          <li><span>Plan FY31 revenue</span><span>₹11,077 Cr</span></li>
+          <li><span>Core growth falls 12% short</span><span class="neg">−₹398 Cr</span></li>
+          <li><span>Premium mix at +4 points, not +9</span><span class="neg">−₹131 Cr</span></li>
+          <li><span>Solar at half of target</span><span class="neg">−₹274 Cr</span></li>
+          <li><span>Storage never launches</span><span class="neg">−₹202 Cr</span></li>
+          <li><span>Sunflame divested in full</span><span class="neg">−₹750 Cr</span></li>
+          <li><span>Services attachment halves</span><span class="neg">−₹91 Cr</span></li>
+          <li class="end"><span>Downside revenue, ROCE</span><span>₹9,231 Cr, 26.3%</span></li>
+        </ul>
+      </div>
+    </div>
+    <ul class="facts" style="margin-top:36px">
+      <li><span>Operating cash flow, FY27 to FY31</span><b>₹3,239 Cr</b></li>
+      <li><span>Capex, Gegadyne tranches and dividends</span><b>₹1,855 Cr</b></li>
+      <li><span>Surplus cash at FY31, after ₹231 Cr opening net cash</span><b>₹1,615 Cr</b></li>
+      <li><span>What happens to the surplus</span><b>Returned if no business clears the bar</b></li>
+    </ul>
+  </div>
+</section>
+
+<section class="block" id="worth">
+  <div class="wrap">
+    <div class="head">
+      <h2>What the plan is worth</h2>
+      <p>The same discounted cash flow is run twice: once on the plan, and once on V-Guard continuing its FY26 path of 7% growth at an 8.8% margin. The gap between the two is the value of the choices.</p>
+    </div>
+    <div class="dcf-top">
+      <div>
+        <div class="ctrl"><div class="dim-top"><b>Cost of capital (WACC)</b><span class="pts" id="o_w"></span></div>
+          <input type="range" id="s_w" min="9.5" max="14" step="0.1" value="11.7" aria-label="WACC"><div class="hint">Plan: 11.7%, all equity, since V-Guard carries net cash.</div></div>
+        <div class="ctrl"><div class="dim-top"><b>Growth after FY31</b><span class="pts" id="o_g"></span></div>
+          <input type="range" id="s_g" min="4" max="8" step="0.1" value="6" aria-label="Terminal growth"><div class="hint">Plan: 6%, well below the 13.2% of the plan years.</div></div>
+        <div class="ctrl"><div class="dim-top"><b>Exit multiple, for the cross-check</b><span class="pts" id="o_x"></span></div>
+          <input type="range" id="s_x" min="12" max="30" step="1" value="20" aria-label="Exit EV to EBITDA multiple"><div class="hint">Plan 20 times FY31 EBITDA, below the roughly 26 times V-Guard traded at in March 2026.</div></div>
+        <div class="worth">
+          <div><b id="d_plan"></b><span>Plan, enterprise value</span></div>
+          <div><b id="d_sq"></b><span>Status quo</span></div>
+          <div><b id="d_up" style="color:var(--green)"></b><span>Value created</span></div>
+        </div>
+        <p class="small" style="margin-top:16px" id="d_ps"></p>
+      </div>
+      <div>
+        <h3>Free cash flow to firm (₹ crore)</h3>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th></th><th>FY27</th><th>FY28</th><th>FY29</th><th>FY30</th><th>FY31</th></tr></thead>
+          <tbody>
+            <tr><td>Plan</td><td>460</td><td>222</td><td>270</td><td>480</td><td>602</td></tr>
+            <tr><td>Status quo</td><td>202</td><td>227</td><td>255</td><td>283</td><td>315</td></tr>
+          </tbody></table></div>
+        <p class="small muted" style="margin-top:10px">Cash after tax, capex, working capital and the Gegadyne tranches. FY28 and FY29 dip because that's when capacity, working capital and Gegadyne money go in.</p>
+        <h3 style="margin-top:22px">Plan value by WACC and growth (₹ crore)</h3>
+        <div class="tbl-wrap"><table class="grid5" id="grid"></table></div>
+      </div>
+    </div>
+    <p class="prose small muted" style="margin-top:26px">A perpetuity DCF at this cost of capital values most Indian consumer-electrical companies below where they trade, because the market prices a longer run of high growth than any five-year model captures. So the headline is the gap between plan and status quo, calculated on identical assumptions. Valued instead at <span id="d_xm">20</span> times FY31 EBITDA, the plan is worth <span id="d_exit"></span>. <span id="d_between">V-Guard's share price of ₹317 in March 2026 sits between the two methods.</span></p>
+  </div>
+</section>
+
+<section class="block" id="evidence">
+  <div class="wrap">
+    <div class="head">
+      <h2>What 400 conversations told us</h2>
+      <p>Fifty solar installers, a hundred electricians and 250 homeowners. The findings that shaped the plan, including three that cut against it, and every response underneath them.</p>
+    </div>
+    <div class="evidence">
+      <div class="ev"><b>63%</b><p>of the time, the electrician picks the brand, not the customer. Homeowners put it at 62%, from the other side of the same sale.<small>Electricians n=100, homeowners n=250</small></p></div>
+      <div class="ev"><b>18 days</b><p>is how long installers wait for a solar warranty replacement. Electricians wait 9.6 days for the brands they use most.<small>Installers n=50, electricians n=100</small></p></div>
+      <div class="ev"><b>74%</b><p>of installers want one kit from one Indian brand, and 60% would pay 4% or more for it.<small>Installers n=50</small></p></div>
+      <div class="ev"><b>r = −0.03</b><p>is the link between trusting V-Guard and wanting the kit. Demand comes from the warranty gap, not the logo, so the plan sells service.<small>Installers n=50</small></p></div>
+      <div class="ev"><b>67%</b><p>of electricians fielded three or more solar enquiries in six months, and 76% would pass them on for ₹2,000 or less.<small>Electricians n=100</small></p></div>
+      <div class="ev"><b>49%</b><p>of homeowners say trust or hassle stops them going solar. Only 27% say cost.<small>Homeowners n=250</small></p></div>
+      <div class="ev"><b>46.0%</b><p>would pay ₹75,000 or more for home battery backup if they know about time-of-day tariffs, and 45.9% if they don't. Awareness changes nothing yet, so storage stays an option.<small>Homeowners n=250</small></p></div>
+      <div class="ev"><b>+10</b><p>is V-Guard's Net Promoter Score among homeowners, against 92 among dealers. The channel is keen; the consumer is satisfied.<small>Homeowners n=250; 90% owned a V-Guard product</small></p></div>
+    </div>
+    <p class="small muted" style="margin-top:18px">The sample is purposive, not random, so these figures show direction rather than population values. Deeper V-Guard ownership did not raise trust in V-Guard for solar: 25.0% of single-product owners would trust an existing electrical brand, against 19.0% of those owning four or more. That's why the plan sells to installers rather than homeowners.</p>
+    <div class="sx">
+      <h3>Explore the raw responses</h3>
+      <p class="small muted" style="margin:4px 0 0">Pick any question from the three questionnaires and split it by any other. Figures are counted live from the 400 responses. "None" is a real answer and counts in the base.</p>
+      <div class="sx-controls">
+        <div><label for="sx_s">Survey</label><select id="sx_s"></select></div>
+        <div><label for="sx_q">Question</label><select id="sx_q"></select></div>
+        <div><label for="sx_b">Split by</label><select id="sx_b"></select></div>
+      </div>
+      <div class="sx-out" id="sx_out" aria-live="polite"></div>
+    </div>
+
+  </div>
+</section>
+
+<section class="block" id="gates">
+  <div class="wrap">
+    <div class="head">
+      <h2>The gates we've written down</h2>
+      <p>Each engine has a test, and the consequence of failing it is decided now, before anyone is attached to the spending. Try two of them.</p>
+    </div>
+
+    <div class="checkers">
+      <div class="checker">
+        <h3>Sunflame's FY28 test</h3>
+        <p class="small muted" style="margin:0 0 6px">Enter what Sunflame actually delivers in FY28. The decision was made in advance.</p>
+        <div class="field"><label for="sf_rev">FY28 revenue (₹ crore)</label><input type="number" id="sf_rev" value="360" min="0" step="10"></div>
+        <div class="field"><label for="sf_m">Operating margin (%)</label><input type="number" id="sf_m" value="8.5" min="-20" max="40" step="0.5"></div>
+        <div class="field"><label for="sf_cash">Cash generation</label><select id="sf_cash"><option value="1">Positive</option><option value="0">Negative</option></select></div>
+        <div class="field"><label for="sf_r">Return on the new capital (%)</label><input type="number" id="sf_r" value="16" min="-50" max="80" step="0.5"></div>
+        <div class="lamps" id="sf_lamps"></div>
+        <div class="decision" id="sf_out" aria-live="polite"></div>
+      </div>
+      <div class="checker">
+        <h3>Gegadyne: exercise the option?</h3>
+        <p class="small muted" style="margin:0 0 6px">V-Guard holds 30.35%. The option to reach 51% is exercised only if all four gates clear and the price is under the cap.</p>
+        <label class="check"><input type="checkbox" id="gg1"> Independent validation of safety, life and performance</label>
+        <label class="check"><input type="checkbox" id="gg2"> Repeat orders from paying commercial customers</label>
+        <label class="check"><input type="checkbox" id="gg3"> Residential units at 20% or more gross margin</label>
+        <label class="check"><input type="checkbox" id="gg4"> A 1,000 to 2,000 home V-Guard pilot succeeds</label>
+        <div class="field"><label for="gg_v">Gegadyne equity valuation at exercise (₹ crore)</label><input type="number" id="gg_v" value="1000" min="0" step="50"></div>
+        <div class="decision" id="gg_out" aria-live="polite"></div>
+      </div>
+    </div>
+    <h3 style="margin-bottom:6px">All the gates</h3>
+    <ul class="gates">
+      <li><b>Solar kit margins</b>Blended gross margin of 25% or more and contribution of 18% or more. Below that, the push is capped and capital goes to premium electricals.</li>
+      <li><b>Solar returns</b>Segment EBIT margin above 12% and ROCE of 18% or more, after charging the capacity the existing solar business already uses. Plan: 12.1% and 28.2%.</li>
+      <li><b>Sunflame, FY28</b>At least ₹350 crore of revenue, an 8% operating margin, positive cash and more than 15% on new capital, rising to 18% by FY29. Miss it and the business is sold.</li>
+      <li><b>Gegadyne</b>A contractual option to reach 51%, capped at a ₹1,200 crore valuation, exercised only if the technology, repeat orders, 20% residential margins and a 1,000 to 2,000 home pilot all come through.</li>
+      <li><b>Seven-day warranty</b>Made contractual in a district only after a pilot there hits 95% on time. Coverage grows; reliability doesn't slip.</li>
+      <li><b>Capacity, FY27</b>Company-wide utilisation is 59%, but line-level figures aren't disclosed. Spare capacity on the inverter, cable and switchgear lines is confirmed before scale capex is released.</li>
+      <li><b>Lighting</b>Scores 54. A pilot can finish; there's no money for national scale until it clears 75.</li>
+      <li><b>Home storage</b>Launched state by state from FY30, only where tariff spread, export rates and battery cost all clear the trigger.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="block" id="questions">
+  <div class="wrap">
+    <div class="head"><h2>Questions we expect</h2></div>
+    <div class="prose" style="max-width:76ch">
+      <details><summary>Why not just enter rooftop solar retail?</summary><div class="ans"><p>Over 20,000 vendors are registered under PM Surya Ghar, and the three largest organised players together hold about 50,000 installations, roughly 1% of the 50 lakh done so far. It's a crowded, low-margin business where being local matters more than the brand. Our research also found no evidence that owning V-Guard products makes people trust V-Guard for solar. Selling components to installers needs none of that trust.</p></div></details>
+      <details><summary>What if cheaper imported inverters undercut the kit?</summary><div class="ans"><p>Chinese suppliers hold about 45.7% of string-inverter shipments. The kit is priced 4.3% above a comparable imported bundle and wins on the 18-day warranty gap, not on price. If blended gross margin falls below 25% or contribution below 18%, the push is capped and the money goes to premium electricals. The plan contribution is 21.0%, and 19.6% even if five-year warranty claims reach 13%.</p></div></details>
+      <details><summary>Can V-Guard's service centres actually fix solar inverters?</summary><div class="ans"><p>Not today. None of the 550-plus centres is set up for grid-connected inverters, so the advantage is a network that can be converted, not one that's ready. We convert 200 by FY27, 400 by FY28 and all of them by FY29, for about ₹18 to 20 crore. The seven-day promise becomes binding in a district only once a pilot there delivers 95% on time.</p></div></details>
+      <details><summary>Why grow at 13.2% when management is aiming for 15%?</summary><div class="ans"><p>Because the target is return, not revenue. The plan deliberately gives up about ₹400 crore of low-return revenue and doesn't chase categories that fail the test. The result is ROCE of 33.4% in FY31 against a commitment of 24%.</p></div></details>
+      <details><summary>What if several things go wrong at once?</summary><div class="ans"><p>We tested that. Core growth falls 12% short, premium mix delivers less than half, solar reaches half its target, storage never launches, Sunflame is sold and services attachment halves. Revenue drops to ₹9,231 crore and ROCE is still 26.3%. The ₹250 crore Gegadyne money is never spent in that case, because the gates that release it aren't met.</p></div></details>
+      <details><summary>Why is your DCF value per share below the share price?</summary><div class="ans"><p>A perpetuity DCF at an 11.7% cost of capital puts the plan at about ₹206 a share; valued at 20 times FY31 EBITDA it's about ₹396. The March 2026 price of ₹317 sits between them. We lead with the value created, ₹5,016 crore over the status quo on identical assumptions, because that isolates what the choices are worth.</p></div></details>
+      <details><summary>What happens to Sunflame?</summary><div class="ans"><p>V-Guard paid ₹660 crore for it, and it earned about ₹13 crore in FY26. It gets one properly funded turnaround with a hard FY28 test. If it misses, it's sold and the impairment is accepted. The plan still returns 30.3% if Sunflame is removed entirely.</p></div></details>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Sources.</b> V-Guard Integrated Annual Report 2025–26; V-Guard Q1 FY27 results; MNRE and PM Surya Ghar progress releases; JMK Research inverter shipment data; Mordor Intelligence, IndexBox and IMARC cable market reports; Ministry of Power tariff rules; team survey of 400 respondents, August 2026. Full references are in the detailed report.</p>
+    <p>Every figure here comes from the detailed report and the financial model. The interactive calculations on this page reproduce the model's formulas and match it to the rupee at the plan settings.</p>
+    <p>Team GuardHellites: Subhranil Hazra, Naman Agrawal and Harshit Malpani, IIM Lucknow.</p>
+  </div>
+</footer>
+
+<script>const SURVEY={"A":{"label":"Solar installers (EPCs)","n":50,"qs":[{"c":"A_Q1","q":"Which state is your business based in?","t":"Text","o":null,"v":["Uttar Pradesh","Maharashtra","Rajasthan","Rajasthan","Gujarat","Uttar Pradesh","Gujarat","Maharashtra","Uttar Pradesh","Kerala","Tamil Nadu","Rajasthan","Gujarat","Tamil Nadu","Uttar Pradesh","Gujarat","Kerala","Karnataka","Rajasthan","Tamil Nadu","Tamil Nadu","Kerala","Maharashtra","Maharashtra","Kerala","Kerala","Gujarat","Rajasthan","Tamil Nadu","Gujarat","Maharashtra","Gujarat","Maharashtra","Uttar Pradesh","Karnataka","Tamil Nadu","Maharashtra","Maharashtra","Telangana","Kerala","Gujarat","Kerala","Rajasthan","Gujarat","Kerala","Maharashtra","Uttar Pradesh","Uttar Pradesh","Gujarat","Rajasthan"]},{"c":"A_Q2","q":"Is your operating area mainly urban, semi-urban or rural?","t":"Choice","o":["Urban","Semi-urban","Rural"],"v":["Semi-urban","Semi-urban","Semi-urban","Semi-urban","Semi-urban","Rural","Urban","Semi-urban","Semi-urban","Rural","Rural","Rural","Semi-urban","Semi-urban","Semi-urban","Semi-urban","Semi-urban","Urban","Semi-urban","Rural","Semi-urban","Rural","Semi-urban","Semi-urban","Semi-urban","Semi-urban","Urban","Rural","Urban","Rural","Semi-urban","Rural","Rural","Semi-urban","Semi-urban","Urban","Urban","Rural","Semi-urban","Rural","Urban","Urban","Semi-urban","Semi-urban","Semi-urban","Urban","Rural","Urban","Semi-urban","Semi-urban"]},{"c":"A_Q3","q":"How many years have you been installing rooftop solar?","t":"Number","o":null,"v":[6,7,6,8,2,1,10,2,9,3,3,10,12,13,9,3,8,7,3,6,10,1,1,8,10,9,11,1,1,11,6,4,9,9,13,8,1,3,2,8,2,3,11,6,11,7,9,11,15,15]},{"c":"A_Q4","q":"On average, how many residential systems do you install per month?","t":"Number","o":null,"v":[8,15,7,16,15,3,15,3,14,14,3,14,23,27,21,6,11,12,5,22,17,6,11,15,13,18,11,4,7,19,8,10,12,22,21,14,12,17,7,12,7,12,19,18,12,13,19,18,25,22]},{"c":"A_Q5","q":"What is your average residential system size?","t":"Number","o":null,"v":[2.9,3.5,3.3,2,3.8,3.2,2.8,3.4,2,2.3,5,3.9,2.8,3.7,3.8,3.3,3.2,4.4,3.6,2.2,3.1,3.2,2.9,3.4,2.6,4.4,4.4,3.6,2.9,3.7,3.7,2.6,4,4,3.4,3.4,2.4,2.7,4.5,4.2,3.5,2.5,2.2,3.7,3.7,4,2,2.7,3.1,3]},{"c":"A_Q6","q":"How many installation staff do you employ or contract?","t":"Number","o":null,"v":[5,7,2,9,7,4,7,2,7,8,2,4,10,14,8,2,6,2,3,11,7,3,7,6,6,7,3,5,7,11,4,7,3,14,10,6,4,9,2,7,3,5,7,11,6,6,5,10,12,10]},{"c":"A_Q7","q":"Which inverter brand do you use most often?","t":"Text","o":null,"v":["Sungrow","Luminous","Growatt","Luminous","Solis","Growatt","Havells","Sungrow","Luminous","Solis","GoodWe","Luminous","Luminous","Delta","Waaree","Growatt","Waaree","Havells","Growatt","GoodWe","GoodWe","GoodWe","GoodWe","Luminous","Growatt","Luminous","Luminous","Havells","GoodWe","Havells","Solis","Luminous","GoodWe","Growatt","Growatt","GoodWe","Growatt","Solis","Luminous","Growatt","Sungrow","Waaree","GoodWe","Growatt","Sungrow","Waaree","Growatt","Sungrow","Solis","Solis"]},{"c":"A_Q8","q":"Is that inverter Indian-made or imported?","t":"Choice","o":["Indian","Imported","Mixed","Don't know"],"v":["Imported","Indian","Imported","Indian","Imported","Imported","Indian","Imported","Indian","Imported","Imported","Indian","Indian","Mixed","Indian","Imported","Indian","Indian","Imported","Imported","Imported","Imported","Imported","Indian","Imported","Indian","Indian","Indian","Imported","Indian","Imported","Indian","Imported","Imported","Imported","Imported","Imported","Imported","Indian","Imported","Imported","Indian","Imported","Imported","Imported","Indian","Imported","Imported","Imported","Imported"]},{"c":"A_Q9","q":"Where do you buy your balance-of-system components (cable, protection, mounting)?","t":"Choice","o":["Local distributor","Direct from manufacturer","Online","Mixed"],"v":["Direct from manufacturer","Mixed","Local distributor","Mixed","Direct from manufacturer","Local distributor","Local distributor","Direct from manufacturer","Mixed","Local distributor","Local distributor","Direct from manufacturer","Mixed","Mixed","Local distributor","Direct from manufacturer","Direct from manufacturer","Mixed","Local distributor","Local distributor","Direct from manufacturer","Mixed","Local distributor","Local distributor","Direct from manufacturer","Online","Direct from manufacturer","Direct from manufacturer","Mixed","Mixed","Local distributor","Local distributor","Direct from manufacturer","Mixed","Direct from manufacturer","Local distributor","Local distributor","Mixed","Mixed","Mixed","Mixed","Direct from manufacturer","Mixed","Local distributor","Mixed","Mixed","Local distributor","Local distributor","Local distributor","Direct from manufacturer"]},{"c":"A_Q10","q":"What is your BIGGEST operational problem today? (rank 1)","t":"Choice","o":["Inverter failure","Warranty turnaround","Component availability","Customer trust","Customer financing","Subsidy delay","Skilled manpower","Price competition"],"v":["Warranty turnaround","Component availability","Warranty turnaround","Inverter failure","Inverter failure","Customer trust","Component availability","Subsidy delay","Subsidy delay","Customer financing","Inverter failure","Component availability","Subsidy delay","Component availability","Warranty turnaround","Inverter failure","Warranty turnaround","Component availability","Price competition","Inverter failure","Price competition","Component availability","Subsidy delay","Subsidy delay","Price competition","Inverter failure","Warranty turnaround","Warranty turnaround","Warranty turnaround","Customer trust","Warranty turnaround","Customer trust","Price competition","Price competition","Price competition","Subsidy delay","Warranty turnaround","Warranty turnaround","Price competition","Customer financing","Inverter failure","Component availability","Subsidy delay","Subsidy delay","Price competition","Customer financing","Component availability","Skilled manpower","Price competition","Customer financing"]},{"c":"A_Q11","q":"Second biggest problem? (rank 2)","t":"Choice","o":["Customer trust","Customer financing","Inverter failure","Price competition","Component availability","Warranty turnaround","Subsidy delay","Skilled manpower"],"v":["Price competition","Warranty turnaround","Customer trust","Component availability","Customer financing","Inverter failure","Inverter failure","Warranty turnaround","Customer trust","Skilled manpower","Customer trust","Subsidy delay","Customer financing","Customer trust","Price competition","Warranty turnaround","Customer financing","Subsidy delay","Customer trust","Skilled manpower","Inverter failure","Warranty turnaround","Skilled manpower","Price competition","Customer trust","Component availability","Component availability","Customer financing","Skilled manpower","Warranty turnaround","Price competition","Component availability","Customer financing","Inverter failure","Customer financing","Price competition","Customer trust","Customer trust","Subsidy delay","Inverter failure","Customer financing","Customer financing","Customer trust","Inverter failure","Subsidy delay","Inverter failure","Price competition","Component availability","Component availability","Price competition"]},{"c":"A_Q12","q":"Third biggest problem? (rank 3)","t":"Choice","o":["Subsidy delay","Customer trust","Warranty turnaround","Skilled manpower","Component availability","Customer financing","Inverter failure","Price competition"],"v":["Customer financing","Customer trust","Subsidy delay","Skilled manpower","Skilled manpower","Warranty turnaround","Price competition","Customer trust","Skilled manpower","Inverter failure","Price competition","Skilled manpower","Warranty turnaround","Subsidy delay","Component availability","Subsidy delay","Inverter failure","Warranty turnaround","Inverter failure","Price competition","Customer trust","Subsidy delay","Customer trust","Customer trust","Skilled manpower","Customer financing","Subsidy delay","Component availability","Component availability","Customer financing","Inverter failure","Warranty turnaround","Subsidy delay","Component availability","Warranty turnaround","Customer trust","Customer financing","Subsidy delay","Customer trust","Warranty turnaround","Subsidy delay","Subsidy delay","Skilled manpower","Component availability","Skilled manpower","Subsidy delay","Warranty turnaround","Price competition","Customer trust","Component availability"]},{"c":"A_Q13","q":"When a component fails under warranty, how many days does replacement typically take?","t":"Number","o":null,"v":[31,15,23,13,22,25,12,16,18,19,30,21,16,14,16,15,21,9,17,15,11,24,14,14,19,14,20,12,25,15,29,9,14,16,26,15,30,25,16,13,17,10,16,18,22,11,19,21,17,21]},{"c":"A_Q14","q":"Roughly what share of your installed inverters fail within the first two years?","t":"Number","o":null,"v":[7,2,6,1,4,7,5,8,5,8,9,7,1,5,9,6,7,5,5,4,7,5,9,6,9,4,3,7,10,5,3,6,3,6,9,9,7,5,6,8,8,4,6,6,7,4,9,10,4,5]},{"c":"A_Q15","q":"What share of your customers ask you which BRAND of inverter you are fitting?","t":"Number","o":null,"v":[29,31,57,32,67,19,32,51,35,10,49,57,77,49,21,27,36,28,46,38,33,37,38,53,40,73,45,70,49,24,19,63,19,30,30,42,33,33,68,43,29,55,25,23,45,49,38,72,46,10]},{"c":"A_Q16","q":"How interested would you be in buying ONE integrated kit (inverter + DC/AC cable + protection + mounting) from a single trusted Indian brand?","t":"Scale 1-5","o":null,"v":[4,4,3,2,3,4,4,4,4,5,4,4,4,5,4,4,4,3,4,4,4,5,4,3,3,3,5,4,3,4,4,4,3,5,4,3,4,4,3,3,4,4,4,4,4,4,4,3,4,4]},{"c":"A_Q17","q":"What price premium over your current Chinese-import kit would you accept for a BIS-certified Indian branded kit with 5-year on-site warranty?","t":"Choice","o":["0%","1-3%","4-6%","7-10%","Above 10%"],"v":["4-6%","1-3%","1-3%","0%","4-6%","7-10%","4-6%","1-3%","7-10%","7-10%","4-6%","4-6%","7-10%","1-3%","1-3%","0%","4-6%","0%","4-6%","7-10%","4-6%","4-6%","1-3%","1-3%","4-6%","4-6%","4-6%","4-6%","1-3%","1-3%","1-3%","4-6%","1-3%","7-10%","1-3%","0%","0%","4-6%","1-3%","0%","4-6%","1-3%","4-6%","4-6%","7-10%","7-10%","7-10%","4-6%","4-6%","4-6%"]},{"c":"A_Q18","q":"How valuable would a co-branded warranty ('Powered by V-Guard components') be in winning customers?","t":"Scale 1-5","o":null,"v":[3,4,3,4,2,4,4,3,4,4,4,3,4,4,4,4,3,3,4,4,3,5,3,4,4,3,4,4,3,4,2,4,3,4,3,4,4,3,4,4,2,4,4,4,4,5,4,3,5,5]},{"c":"A_Q19","q":"Would that co-branding help you close more sales?","t":"Choice","o":["Yes","No","Maybe"],"v":["Maybe","Yes","Maybe","Yes","No","Yes","Yes","Maybe","Maybe","Yes","Maybe","Maybe","Yes","Yes","Maybe","Yes","Maybe","Maybe","Yes","Yes","Maybe","Yes","Maybe","Maybe","Yes","Maybe","Yes","Yes","Maybe","Yes","Maybe","Maybe","Maybe","Yes","Maybe","Yes","Yes","Maybe","Maybe","Yes","Maybe","Maybe","Yes","Yes","Yes","Yes","Yes","Maybe","Yes","Yes"]},{"c":"A_Q20","q":"What credit terms would you need from a component supplier?","t":"Choice","o":["Advance","15 days","30 days","45 days","60 days"],"v":["30 days","30 days","45 days","30 days","45 days","30 days","15 days","45 days","45 days","30 days","30 days","30 days","60 days","30 days","30 days","30 days","Advance","45 days","60 days","30 days","30 days","15 days","30 days","30 days","30 days","45 days","45 days","30 days","60 days","45 days","15 days","15 days","Advance","30 days","45 days","45 days","30 days","30 days","30 days","15 days","45 days","45 days","30 days","30 days","45 days","30 days","45 days","30 days","60 days","30 days"]},{"c":"A_Q21","q":"How well do you know the V-Guard brand?","t":"Scale 1-5","o":null,"v":[2,4,3,3,3,3,5,5,4,3,3,3,4,3,2,3,5,4,3,5,3,4,4,2,4,4,4,5,5,4,4,3,2,5,4,5,3,4,4,4,4,4,4,3,5,3,4,5,4,3]},{"c":"A_Q22","q":"How much would you trust V-Guard to supply solar components?","t":"Scale 1-5","o":null,"v":[3,4,4,3,3,3,5,4,4,2,4,3,4,3,4,4,5,3,5,5,3,5,5,3,4,5,3,5,5,5,3,3,2,4,3,5,4,3,5,3,4,5,5,3,5,4,4,5,5,3]},{"c":"A_Q23","q":"How interested would you be in becoming a V-Guard Authorised Energy Partner (training, leads, priority warranty)?","t":"Scale 1-5","o":null,"v":[3,4,3,3,5,4,4,4,4,5,4,5,4,4,4,5,5,4,3,4,2,5,4,4,4,4,4,4,3,5,4,3,3,5,3,3,3,3,5,3,4,5,4,4,5,4,3,3,5,4]},{"c":"A_Q24","q":"How concerned are you about foreign inverters transmitting data abroad / remote shutdown risk?","t":"Scale 1-5","o":null,"v":[3,2,3,4,3,4,4,2,3,5,3,3,3,3,3,2,3,4,5,4,4,4,3,5,5,4,2,5,2,3,4,3,4,5,2,4,4,3,5,3,4,3,5,5,4,4,5,4,3,4]},{"c":"A_Q25","q":"What is your approximate monthly spend on inverters and BOS components?","t":"Number","o":null,"v":[550000,1650000,600000,1000000,1850000,300000,1250000,250000,800000,1000000,350000,1600000,1500000,2300000,2000000,650000,1000000,1350000,500000,1450000,1500000,500000,800000,1700000,750000,2650000,1450000,350000,450000,1800000,850000,700000,1050000,2600000,2100000,1050000,750000,1050000,850000,1350000,750000,1000000,1400000,1800000,1350000,1150000,1200000,1300000,2300000,2000000]},{"c":"A_Q26","q":"At the SAME price, would you switch to a V-Guard component kit?","t":"Choice","o":["Yes","No","Maybe"],"v":["Maybe","Maybe","Maybe","Maybe","Maybe","No","Yes","Yes","Maybe","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Maybe","Yes","Yes","Maybe","Maybe","Yes","Maybe","Yes","Yes","Yes","Maybe","No","Maybe","Yes","Yes","Maybe","Yes","Yes","Maybe","Maybe","Yes","Maybe","Yes","Maybe","Yes","Yes","Maybe","No","Yes","No"]},{"c":"A_Q27","q":"What is the single biggest barrier to switching supplier?","t":"Choice","o":["Price","Credit terms","Product availability","Technical spec","Existing relationship","Warranty doubt"],"v":["Credit terms","Existing relationship","Technical spec","Warranty doubt","Price","Price","Price","Price","Existing relationship","Existing relationship","Product availability","Credit terms","Product availability","Credit terms","Product availability","Technical spec","Price","Product availability","Existing relationship","Price","Warranty doubt","Price","Credit terms","Product availability","Technical spec","Product availability","Product availability","Technical spec","Price","Existing relationship","Existing relationship","Existing relationship","Price","Price","Price","Price","Credit terms","Price","Technical spec","Existing relationship","Product availability","Existing relationship","Existing relationship","Price","Existing relationship","Existing relationship","Price","Price","Warranty doubt","Technical spec"]}]},"B":{"label":"Channel electricians","n":100,"qs":[{"c":"B_Q1","q":"Which state do you work in?","t":"Text","o":null,"v":["Uttar Pradesh","Karnataka","Rajasthan","Karnataka","Uttar Pradesh","Gujarat","Karnataka","Karnataka","Gujarat","Karnataka","Tamil Nadu","Uttar Pradesh","Kerala","Tamil Nadu","Maharashtra","Uttar Pradesh","Maharashtra","Gujarat","Rajasthan","Uttar Pradesh","Rajasthan","Telangana","Kerala","Karnataka","Tamil Nadu","Karnataka","Tamil Nadu","Gujarat","Telangana","Karnataka","Telangana","Maharashtra","Gujarat","Maharashtra","Maharashtra","Gujarat","Gujarat","Karnataka","Karnataka","Rajasthan","Gujarat","Tamil Nadu","Maharashtra","Rajasthan","Tamil Nadu","Kerala","Maharashtra","Tamil Nadu","Uttar Pradesh","Maharashtra","Gujarat","Maharashtra","Rajasthan","Rajasthan","Uttar Pradesh","Uttar Pradesh","Kerala","Tamil Nadu","Telangana","Rajasthan","Karnataka","Gujarat","Kerala","Maharashtra","Telangana","Rajasthan","Maharashtra","Gujarat","Kerala","Maharashtra","Uttar Pradesh","Telangana","Kerala","Karnataka","Kerala","Karnataka","Tamil Nadu","Gujarat","Kerala","Maharashtra","Gujarat","Uttar Pradesh","Tamil Nadu","Telangana","Kerala","Tamil Nadu","Kerala","Kerala","Tamil Nadu","Uttar Pradesh","Telangana","Tamil Nadu","Maharashtra","Kerala","Kerala","Tamil Nadu","Kerala","Uttar Pradesh","Karnataka","Karnataka"]},{"c":"B_Q2","q":"Is your work area urban, semi-urban or rural?","t":"Choice","o":["Urban","Semi-urban","Rural"],"v":["Semi-urban","Urban","Urban","Semi-urban","Urban","Urban","Urban","Rural","Rural","Urban","Urban","Urban","Urban","Semi-urban","Rural","Semi-urban","Rural","Semi-urban","Semi-urban","Urban","Semi-urban","Urban","Semi-urban","Semi-urban","Rural","Semi-urban","Urban","Urban","Rural","Semi-urban","Rural","Rural","Urban","Urban","Rural","Rural","Rural","Semi-urban","Urban","Urban","Semi-urban","Rural","Urban","Rural","Rural","Rural","Urban","Semi-urban","Urban","Semi-urban","Urban","Semi-urban","Semi-urban","Urban","Urban","Urban","Semi-urban","Urban","Urban","Semi-urban","Semi-urban","Urban","Semi-urban","Urban","Semi-urban","Semi-urban","Semi-urban","Urban","Semi-urban","Urban","Urban","Rural","Rural","Urban","Urban","Urban","Rural","Urban","Urban","Semi-urban","Urban","Rural","Semi-urban","Rural","Semi-urban","Semi-urban","Semi-urban","Semi-urban","Semi-urban","Semi-urban","Semi-urban","Rural","Semi-urban","Semi-urban","Semi-urban","Semi-urban","Semi-urban","Semi-urban","Urban","Semi-urban"]},{"c":"B_Q3","q":"How many years have you worked as an electrician / contractor?","t":"Number","o":null,"v":[3,7,16,7,5,14,21,6,16,8,14,4,16,6,11,10,1,15,1,20,6,16,5,13,7,7,3,19,4,10,5,12,12,1,1,9,3,2,13,10,14,8,11,9,19,8,20,2,9,6,10,19,3,14,7,9,7,11,12,8,13,1,5,8,12,14,4,3,1,18,10,15,5,11,13,12,7,13,8,1,8,6,13,6,13,6,7,19,8,16,15,18,8,6,12,8,9,23,13,10]},{"c":"B_Q4","q":"How many jobs do you handle in a typical month?","t":"Number","o":null,"v":[7,14,41,12,17,20,33,17,31,13,31,12,23,14,23,17,9,25,12,39,12,21,18,19,22,20,21,34,18,16,20,18,29,9,17,19,9,12,26,17,27,12,17,24,29,21,37,10,29,15,8,32,6,30,20,14,18,26,26,14,24,6,11,22,17,25,20,19,6,35,27,20,12,19,27,21,13,20,22,6,13,14,19,7,31,14,12,26,21,23,22,34,27,12,23,13,9,32,24,22]},{"c":"B_Q5","q":"What is your approximate monthly income?","t":"Choice","o":["Below 20k","20-30k","30-40k","40-60k","Above 60k"],"v":["Below 20k","20-30k","Above 60k","Below 20k","20-30k","30-40k","40-60k","Below 20k","40-60k","20-30k","40-60k","Below 20k","30-40k","Below 20k","20-30k","20-30k","Below 20k","30-40k","Below 20k","Above 60k","Below 20k","30-40k","20-30k","20-30k","20-30k","20-30k","20-30k","40-60k","Below 20k","20-30k","20-30k","20-30k","40-60k","Below 20k","Below 20k","20-30k","Below 20k","Below 20k","30-40k","20-30k","30-40k","Below 20k","20-30k","20-30k","40-60k","20-30k","Above 60k","Below 20k","30-40k","Below 20k","Below 20k","40-60k","Below 20k","40-60k","20-30k","20-30k","20-30k","30-40k","30-40k","Below 20k","30-40k","Below 20k","Below 20k","30-40k","20-30k","30-40k","20-30k","20-30k","Below 20k","40-60k","30-40k","30-40k","Below 20k","20-30k","30-40k","30-40k","Below 20k","30-40k","30-40k","Below 20k","20-30k","Below 20k","20-30k","Below 20k","30-40k","Below 20k","Below 20k","30-40k","20-30k","30-40k","30-40k","40-60k","30-40k","Below 20k","30-40k","Below 20k","Below 20k","40-60k","30-40k","20-30k"]},{"c":"B_Q6","q":"Which V-Guard category do you handle most often?","t":"Choice","o":["Wires","Switchgear","Water heater","Fans","Stabiliser","Pumps","None"],"v":["Switchgear","Stabiliser","Pumps","Wires","Stabiliser","Wires","Fans","Wires","Water heater","Wires","Wires","Water heater","Wires","Water heater","Water heater","Switchgear","Stabiliser","Pumps","Wires","Wires","Wires","Switchgear","Wires","Wires","Stabiliser","None","Stabiliser","Wires","Fans","None","Pumps","Fans","Water heater","Wires","Fans","Wires","Fans","Stabiliser","Switchgear","Switchgear","Water heater","Stabiliser","Switchgear","Switchgear","Fans","Water heater","Fans","Wires","Switchgear","Wires","Stabiliser","Switchgear","Water heater","Wires","Water heater","Stabiliser","Wires","Wires","Fans","Wires","None","Switchgear","Switchgear","None","None","Stabiliser","Switchgear","Switchgear","Switchgear","Switchgear","Water heater","Wires","Wires","Fans","Water heater","Wires","Wires","Wires","Switchgear","Wires","Wires","Pumps","Wires","Fans","Water heater","Pumps","Fans","Wires","Pumps","Wires","Fans","Pumps","None","Wires","Wires","Switchgear","Pumps","Water heater","Pumps","Switchgear"]},{"c":"B_Q7","q":"In what share of jobs do YOU choose the brand rather than the customer?","t":"Number","o":null,"v":[67,41,41,70,70,91,55,75,78,40,64,45,56,72,60,69,68,88,69,51,53,58,52,54,50,77,81,66,67,42,88,58,56,74,64,43,69,49,46,59,58,65,80,52,58,38,70,69,43,63,72,60,65,88,73,75,69,49,79,36,50,65,78,62,76,75,65,66,54,57,70,54,72,71,59,54,69,45,66,83,56,51,59,74,62,49,78,66,84,70,64,95,90,66,45,71,60,80,53,31]},{"c":"B_Q8","q":"What matters most when you recommend a brand?","t":"Choice","o":["Your margin","Availability in shop","After-sales service","Customer asked for it","Product reliability"],"v":["Availability in shop","After-sales service","After-sales service","Availability in shop","Product reliability","Product reliability","After-sales service","Product reliability","Product reliability","After-sales service","Customer asked for it","Availability in shop","Your margin","Product reliability","Your margin","Customer asked for it","Product reliability","Your margin","Your margin","After-sales service","Availability in shop","Your margin","After-sales service","Availability in shop","Product reliability","Product reliability","Product reliability","Product reliability","Customer asked for it","Product reliability","Product reliability","Availability in shop","Product reliability","Your margin","Product reliability","Availability in shop","Product reliability","Your margin","After-sales service","Your margin","Your margin","Product reliability","Availability in shop","Your margin","After-sales service","Product reliability","Product reliability","Your margin","Customer asked for it","After-sales service","Product reliability","Availability in shop","Your margin","Product reliability","After-sales service","Product reliability","Availability in shop","Your margin","After-sales service","Customer asked for it","Your margin","Your margin","Product reliability","Product reliability","Product reliability","Availability in shop","Your margin","After-sales service","Your margin","Your margin","Customer asked for it","Availability in shop","Product reliability","Product reliability","Product reliability","Product reliability","Customer asked for it","After-sales service","Product reliability","Product reliability","Product reliability","Your margin","Availability in shop","Your margin","After-sales service","After-sales service","Availability in shop","Product reliability","Availability in shop","Product reliability","Customer asked for it","Customer asked for it","After-sales service","Your margin","After-sales service","Availability in shop","Customer asked for it","Your margin","Availability in shop","Your margin"]},{"c":"B_Q9","q":"What share of the products you recommend are V-Guard?","t":"Number","o":null,"v":[26,47,31,10,28,36,53,45,37,35,21,32,32,66,46,51,32,24,45,47,33,27,41,16,36,25,35,35,26,20,44,51,26,38,8,10,38,49,27,33,10,48,45,53,61,51,24,40,25,19,39,54,32,37,28,24,31,0,10,29,10,22,30,24,26,56,29,0,11,31,45,17,23,53,0,30,10,30,25,23,33,64,80,25,43,11,34,48,52,43,16,1,4,48,41,57,38,40,71,46]},{"c":"B_Q10","q":"In the last 6 months, how many customers asked you about rooftop solar?","t":"Choice","o":["None","1-2","3-5","6-10","More than 10"],"v":["3-5","1-2","None","1-2","None","3-5","1-2","3-5","6-10","6-10","3-5","More than 10","1-2","6-10","6-10","1-2","3-5","3-5","None","None","More than 10","More than 10","1-2","More than 10","None","3-5","3-5","6-10","6-10","3-5","6-10","1-2","6-10","More than 10","3-5","More than 10","More than 10","1-2","6-10","More than 10","1-2","None","1-2","More than 10","6-10","1-2","More than 10","More than 10","3-5","1-2","More than 10","6-10","More than 10","6-10","1-2","6-10","1-2","6-10","3-5","More than 10","More than 10","1-2","1-2","6-10","1-2","3-5","6-10","More than 10","3-5","3-5","3-5","3-5","1-2","6-10","None","6-10","None","3-5","6-10","6-10","6-10","6-10","1-2","3-5","6-10","3-5","3-5","3-5","6-10","1-2","6-10","None","3-5","3-5","3-5","1-2","None","6-10","1-2","1-2"]},{"c":"B_Q11","q":"How willing would you be to pass solar enquiries to a company for a referral fee?","t":"Scale 1-5","o":null,"v":[3,5,4,3,3,4,3,5,5,4,4,5,4,5,5,4,3,4,3,4,5,5,3,4,4,3,3,5,4,4,4,4,5,4,4,5,4,4,4,5,4,3,5,4,5,4,5,4,4,4,4,5,5,3,4,3,4,5,3,5,5,4,4,3,4,4,5,5,4,5,3,4,3,4,3,4,4,4,4,5,5,4,4,4,5,5,4,5,4,3,5,4,4,3,5,3,4,5,3,4]},{"c":"B_Q12","q":"What referral fee per converted solar customer would genuinely motivate you?","t":"Choice","o":["500","1000","2000","3000","Above 3000"],"v":["500","Above 3000","2000","3000","Above 3000","1000","2000","Above 3000","2000","2000","3000","3000","2000","1000","1000","2000","1000","2000","1000","3000","2000","1000","1000","3000","Above 3000","1000","Above 3000","2000","1000","2000","2000","1000","3000","500","2000","2000","2000","1000","2000","2000","2000","1000","1000","2000","2000","1000","2000","500","3000","3000","2000","3000","3000","2000","1000","2000","500","2000","1000","500","2000","1000","2000","2000","1000","1000","2000","1000","500","2000","3000","3000","Above 3000","Above 3000","3000","Above 3000","2000","2000","3000","1000","1000","Above 3000","2000","1000","1000","2000","2000","1000","2000","1000","2000","2000","500","1000","2000","3000","2000","500","2000","2000"]},{"c":"B_Q13","q":"How interested are you in a free V-Guard certification programme (training + certificate + priority service)?","t":"Scale 1-5","o":null,"v":[4,4,4,3,4,4,5,4,4,4,3,4,5,5,4,4,5,4,4,4,4,5,3,4,4,3,4,4,3,5,4,3,3,4,3,3,3,3,5,5,4,5,5,5,4,3,5,3,4,4,4,4,5,4,4,4,4,2,4,4,3,4,3,4,5,4,4,4,4,4,4,3,3,3,3,3,3,5,4,3,2,3,3,5,4,3,4,5,4,3,4,4,4,4,5,3,4,5,3,4]},{"c":"B_Q14","q":"Would you give 3 days of work time for that certification?","t":"Choice","o":["Yes","No","Maybe"],"v":["Yes","Maybe","Yes","Yes","Yes","Yes","Yes","Maybe","Yes","Yes","No","Yes","Yes","Maybe","Yes","Yes","No","Yes","Yes","Yes","Yes","Yes","Maybe","Yes","Yes","Yes","Maybe","Maybe","Maybe","Yes","Yes","Yes","Maybe","Yes","Yes","Maybe","Yes","Yes","Yes","Yes","Maybe","Yes","Maybe","Yes","Maybe","Maybe","Yes","Yes","Yes","Yes","Yes","Yes","Maybe","Yes","Yes","Yes","Yes","No","Yes","No","No","Maybe","Yes","Maybe","Yes","Yes","Maybe","Yes","Yes","Yes","Yes","Yes","Maybe","Yes","Yes","Yes","Yes","Maybe","Yes","Maybe","No","Maybe","Yes","Maybe","No","Yes","Yes","Maybe","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Maybe","Yes","Yes","Maybe","Maybe"]},{"c":"B_Q15","q":"In what share of jobs is premium fire-retardant wire specified?","t":"Number","o":null,"v":[3,33,21,8,31,8,40,28,22,6,24,31,3,30,30,40,3,43,44,37,40,40,7,52,48,28,40,33,25,19,30,49,9,28,30,28,18,25,28,33,43,30,28,18,39,18,30,42,38,29,33,45,18,36,30,34,23,29,29,40,23,36,11,23,35,32,39,6,34,23,24,45,32,33,40,53,12,40,37,32,29,17,37,6,7,18,14,35,47,16,24,13,35,26,24,29,10,37,16,20]},{"c":"B_Q16","q":"What stops customers from buying premium wire?","t":"Choice","o":["Price","They don't know the difference","Not available in shop","Contractor decides","No perceived benefit"],"v":["No perceived benefit","Price","Contractor decides","Price","Price","No perceived benefit","Price","Price","They don't know the difference","No perceived benefit","No perceived benefit","Contractor decides","Contractor decides","Contractor decides","Price","Contractor decides","Not available in shop","Price","Price","They don't know the difference","Price","Price","Price","They don't know the difference","They don't know the difference","No perceived benefit","They don't know the difference","Price","Not available in shop","They don't know the difference","No perceived benefit","Price","Price","No perceived benefit","Price","Contractor decides","Not available in shop","They don't know the difference","No perceived benefit","Price","Contractor decides","Not available in shop","They don't know the difference","Price","They don't know the difference","Price","Not available in shop","Not available in shop","Price","They don't know the difference","They don't know the difference","Contractor decides","Price","No perceived benefit","Price","Not available in shop","No perceived benefit","Price","No perceived benefit","Price","They don't know the difference","Price","They don't know the difference","No perceived benefit","Not available in shop","They don't know the difference","They don't know the difference","Price","Not available in shop","Price","Price","Contractor decides","Not available in shop","Contractor decides","Price","They don't know the difference","They don't know the difference","Price","No perceived benefit","They don't know the difference","No perceived benefit","Contractor decides","They don't know the difference","Not available in shop","They don't know the difference","Price","Contractor decides","Price","They don't know the difference","They don't know the difference","They don't know the difference","Price","No perceived benefit","No perceived benefit","No perceived benefit","No perceived benefit","Price","Price","Price","They don't know the difference"]},{"c":"B_Q17","q":"How many days does a warranty replacement take from your best brand today?","t":"Number","o":null,"v":[10,15,2,12,5,13,8,7,8,5,3,6,19,6,9,15,10,20,6,12,13,10,12,15,13,9,8,13,14,7,3,14,7,12,6,6,14,14,3,4,8,10,6,3,14,15,11,9,10,10,15,7,11,2,10,7,19,14,12,9,9,7,19,6,11,10,14,13,10,4,2,11,8,8,6,15,8,9,5,13,14,13,7,10,7,8,6,8,10,7,10,11,14,7,6,13,6,10,8,3]},{"c":"B_Q18","q":"Which brand gives you the best after-sales service today?","t":"Text","o":null,"v":["V-Guard","Crompton","Anchor","Crompton","Anchor","Anchor","Polycab","Havells","Havells","Polycab","Crompton","V-Guard","V-Guard","Polycab","Polycab","Havells","V-Guard","Polycab","V-Guard","V-Guard","Crompton","Havells","Crompton","Crompton","V-Guard","Havells","Havells","Anchor","V-Guard","Havells","V-Guard","Havells","V-Guard","Anchor","Anchor","Havells","V-Guard","V-Guard","Havells","Polycab","Polycab","Polycab","Havells","V-Guard","Anchor","Havells","V-Guard","Havells","Polycab","Polycab","Havells","V-Guard","Havells","Polycab","V-Guard","V-Guard","Havells","V-Guard","V-Guard","Havells","V-Guard","Anchor","Havells","Havells","Havells","V-Guard","Havells","Crompton","V-Guard","Havells","Polycab","Crompton","Havells","Polycab","Polycab","V-Guard","Crompton","Polycab","Anchor","V-Guard","V-Guard","Polycab","V-Guard","Havells","Crompton","Polycab","Havells","Polycab","Havells","V-Guard","Crompton","V-Guard","V-Guard","Anchor","Crompton","V-Guard","V-Guard","Crompton","V-Guard","Polycab"]},{"c":"B_Q19","q":"How much extra monthly income would make you actively prefer one brand over others?","t":"Choice","o":["Below 2000","2000-5000","5000-10000","Above 10000"],"v":["2000-5000","2000-5000","Below 2000","Above 10000","Below 2000","5000-10000","2000-5000","5000-10000","Above 10000","Below 2000","Below 2000","5000-10000","2000-5000","2000-5000","Above 10000","Below 2000","2000-5000","5000-10000","5000-10000","5000-10000","2000-5000","2000-5000","Above 10000","Below 2000","Above 10000","Below 2000","Above 10000","5000-10000","Below 2000","2000-5000","2000-5000","2000-5000","5000-10000","2000-5000","2000-5000","2000-5000","Below 2000","5000-10000","5000-10000","2000-5000","5000-10000","5000-10000","2000-5000","2000-5000","5000-10000","Below 2000","Above 10000","5000-10000","5000-10000","2000-5000","2000-5000","2000-5000","5000-10000","2000-5000","2000-5000","2000-5000","2000-5000","Above 10000","2000-5000","5000-10000","Below 2000","2000-5000","Below 2000","5000-10000","2000-5000","2000-5000","Below 2000","2000-5000","Above 10000","2000-5000","Above 10000","2000-5000","5000-10000","5000-10000","2000-5000","2000-5000","5000-10000","5000-10000","5000-10000","2000-5000","Below 2000","2000-5000","Below 2000","2000-5000","2000-5000","Below 2000","Below 2000","2000-5000","2000-5000","2000-5000","5000-10000","2000-5000","2000-5000","5000-10000","2000-5000","Below 2000","2000-5000","Below 2000","5000-10000","5000-10000"]},{"c":"B_Q20","q":"How interested would you be in earning service income from maintaining solar systems after installation?","t":"Scale 1-5","o":null,"v":[3,3,4,4,2,4,3,3,5,3,4,3,5,4,3,3,4,2,4,4,5,4,3,3,5,4,3,4,4,4,3,4,4,4,3,3,4,3,2,4,3,5,4,4,4,4,3,2,5,4,3,5,3,3,4,3,3,4,4,3,4,4,2,4,4,2,4,3,3,3,4,4,3,3,3,3,3,4,4,3,3,4,4,3,5,4,3,5,4,2,3,4,4,4,3,2,3,2,3,4]}]},"C":{"label":"Homeowners","n":250,"qs":[{"c":"C_Q1","q":"Which state do you live in?","t":"Text","o":null,"v":["Tamil Nadu","Karnataka","Telangana","Uttar Pradesh","Karnataka","Kerala","Rajasthan","Gujarat","Tamil Nadu","Telangana","Karnataka","Maharashtra","Gujarat","Madhya Pradesh","Tamil Nadu","Karnataka","Telangana","Karnataka","Rajasthan","Maharashtra","Maharashtra","Gujarat","Maharashtra","Tamil Nadu","Tamil Nadu","Kerala","Rajasthan","Rajasthan","Uttar Pradesh","Kerala","Gujarat","Gujarat","Uttar Pradesh","Karnataka","Karnataka","Kerala","Karnataka","Maharashtra","Uttar Pradesh","Kerala","Tamil Nadu","Kerala","Uttar Pradesh","Kerala","Gujarat","Telangana","Maharashtra","Maharashtra","Maharashtra","Maharashtra","Kerala","Gujarat","Kerala","Maharashtra","Tamil Nadu","Madhya Pradesh","Madhya Pradesh","Kerala","Madhya Pradesh","Telangana","Maharashtra","Kerala","Karnataka","Gujarat","Gujarat","Gujarat","Maharashtra","Telangana","Uttar Pradesh","Tamil Nadu","Karnataka","Gujarat","Kerala","Telangana","Karnataka","Karnataka","Uttar Pradesh","Karnataka","Kerala","Kerala","Uttar Pradesh","Maharashtra","Telangana","Karnataka","Gujarat","Karnataka","Karnataka","Maharashtra","Telangana","Tamil Nadu","Rajasthan","Kerala","Maharashtra","Gujarat","Uttar Pradesh","Tamil Nadu","Karnataka","Madhya Pradesh","Uttar Pradesh","Telangana","Gujarat","Tamil Nadu","Tamil Nadu","Rajasthan","Madhya Pradesh","Telangana","Maharashtra","Karnataka","Tamil Nadu","Gujarat","Kerala","Gujarat","Karnataka","Gujarat","Tamil Nadu","Karnataka","Telangana","Gujarat","Maharashtra","Maharashtra","Maharashtra","Gujarat","Uttar Pradesh","Uttar Pradesh","Tamil Nadu","Gujarat","Gujarat","Rajasthan","Kerala","Uttar Pradesh","Maharashtra","Tamil Nadu","Uttar Pradesh","Karnataka","Madhya Pradesh","Telangana","Kerala","Rajasthan","Rajasthan","Uttar Pradesh","Maharashtra","Kerala","Gujarat","Maharashtra","Karnataka","Rajasthan","Maharashtra","Gujarat","Kerala","Uttar Pradesh","Tamil Nadu","Rajasthan","Kerala","Uttar Pradesh","Kerala","Rajasthan","Tamil Nadu","Rajasthan","Rajasthan","Kerala","Kerala","Uttar Pradesh","Tamil Nadu","Kerala","Uttar Pradesh","Uttar Pradesh","Tamil Nadu","Telangana","Kerala","Rajasthan","Gujarat","Uttar Pradesh","Rajasthan","Maharashtra","Madhya Pradesh","Maharashtra","Karnataka","Tamil Nadu","Tamil Nadu","Tamil Nadu","Maharashtra","Gujarat","Maharashtra","Rajasthan","Rajasthan","Gujarat","Gujarat","Uttar Pradesh","Maharashtra","Karnataka","Maharashtra","Kerala","Kerala","Tamil Nadu","Tamil Nadu","Kerala","Madhya Pradesh","Tamil Nadu","Karnataka","Gujarat","Rajasthan","Tamil Nadu","Kerala","Uttar Pradesh","Rajasthan","Telangana","Rajasthan","Maharashtra","Uttar Pradesh","Rajasthan","Uttar Pradesh","Telangana","Uttar Pradesh","Gujarat","Uttar Pradesh","Tamil Nadu","Maharashtra","Uttar Pradesh","Tamil Nadu","Rajasthan","Rajasthan","Tamil Nadu","Maharashtra","Rajasthan","Rajasthan","Maharashtra","Telangana","Gujarat","Karnataka","Maharashtra","Rajasthan","Gujarat","Karnataka","Telangana","Karnataka","Gujarat","Gujarat","Uttar Pradesh","Uttar Pradesh","Maharashtra","Kerala","Uttar Pradesh","Madhya Pradesh","Uttar Pradesh","Gujarat","Kerala","Maharashtra","Maharashtra","Maharashtra","Rajasthan"]},{"c":"C_Q2","q":"Which type of city or town?","t":"Choice","o":["Metro","Tier 1","Tier 2","Tier 3","Rural"],"v":["Tier 3","Tier 2","Tier 2","Metro","Tier 1","Tier 3","Tier 3","Metro","Rural","Tier 1","Metro","Tier 1","Rural","Tier 1","Tier 1","Tier 3","Tier 1","Tier 2","Tier 1","Tier 1","Rural","Tier 1","Tier 1","Tier 3","Tier 1","Metro","Tier 1","Tier 1","Tier 3","Tier 2","Tier 2","Tier 1","Tier 2","Tier 1","Metro","Tier 1","Metro","Tier 2","Tier 3","Rural","Tier 1","Tier 1","Tier 1","Metro","Tier 3","Rural","Tier 2","Tier 1","Tier 1","Metro","Tier 2","Tier 3","Tier 2","Tier 3","Rural","Tier 2","Tier 1","Tier 2","Tier 1","Tier 1","Rural","Tier 3","Tier 1","Tier 2","Tier 3","Tier 1","Tier 1","Tier 1","Tier 3","Tier 2","Rural","Tier 3","Tier 2","Metro","Tier 1","Tier 1","Rural","Rural","Tier 3","Tier 1","Tier 3","Tier 1","Tier 1","Tier 3","Tier 1","Tier 1","Tier 2","Metro","Tier 2","Tier 1","Metro","Tier 3","Tier 2","Tier 2","Tier 2","Tier 2","Tier 2","Metro","Rural","Tier 3","Tier 3","Tier 3","Rural","Rural","Tier 2","Tier 2","Metro","Tier 2","Tier 2","Rural","Tier 1","Tier 1","Tier 1","Metro","Metro","Tier 2","Tier 1","Rural","Metro","Tier 3","Rural","Tier 1","Rural","Tier 1","Tier 3","Tier 2","Tier 2","Tier 2","Tier 3","Tier 2","Tier 2","Rural","Tier 3","Rural","Tier 1","Tier 1","Tier 2","Tier 3","Tier 1","Tier 1","Metro","Tier 1","Rural","Tier 2","Tier 1","Tier 2","Tier 2","Metro","Tier 1","Rural","Tier 3","Tier 1","Tier 1","Tier 2","Metro","Rural","Tier 1","Tier 2","Tier 1","Metro","Rural","Tier 2","Tier 3","Tier 2","Tier 2","Tier 1","Metro","Tier 1","Tier 1","Tier 3","Tier 2","Metro","Rural","Tier 2","Tier 1","Metro","Tier 3","Tier 2","Rural","Tier 3","Tier 2","Tier 1","Tier 2","Tier 1","Metro","Tier 1","Tier 3","Tier 3","Metro","Tier 1","Tier 3","Metro","Tier 2","Metro","Tier 3","Tier 3","Tier 2","Tier 2","Tier 1","Tier 1","Metro","Rural","Tier 1","Metro","Rural","Metro","Tier 1","Rural","Metro","Metro","Tier 2","Tier 2","Tier 3","Tier 3","Tier 3","Metro","Rural","Metro","Tier 3","Tier 1","Tier 2","Tier 2","Tier 1","Tier 2","Metro","Tier 2","Tier 2","Tier 1","Tier 1","Tier 3","Rural","Tier 2","Tier 2","Rural","Tier 1","Tier 2","Metro","Tier 3","Tier 2","Tier 3","Tier 2","Tier 1","Rural","Tier 1","Tier 1","Tier 1","Tier 2","Tier 3","Tier 2","Tier 2"]},{"c":"C_Q3","q":"Do you own this home?","t":"Choice","o":["Own","Rent"],"v":["Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own","Own"]},{"c":"C_Q4","q":"What type of home?","t":"Choice","o":["Independent house","Apartment top floor","Apartment other floor","Villa"],"v":["Independent house","Apartment top floor","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Villa","Independent house","Independent house","Apartment top floor","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Apartment top floor","Independent house","Independent house","Apartment top floor","Independent house","Independent house","Independent house","Independent house","Apartment top floor","Independent house","Villa","Independent house","Independent house","Independent house","Independent house","Apartment top floor","Independent house","Independent house","Apartment top floor","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Apartment top floor","Independent house","Villa","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Villa","Independent house","Independent house","Independent house","Villa","Independent house","Independent house","Apartment top floor","Apartment top floor","Villa","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Villa","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Apartment top floor","Independent house","Independent house","Apartment top floor","Independent house","Villa","Independent house","Apartment top floor","Independent house","Independent house","Villa","Villa","Independent house","Independent house","Independent house","Independent house","Apartment top floor","Independent house","Apartment top floor","Independent house","Independent house","Independent house","Independent house","Independent house","Apartment top floor","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Villa","Independent house","Apartment top floor","Independent house","Independent house","Independent house","Independent house","Villa","Independent house","Villa","Independent house","Apartment top floor","Independent house","Independent house","Independent house","Independent house","Independent house","Villa","Independent house","Independent house","Independent house","Apartment top floor","Apartment top floor","Villa","Independent house","Independent house","Independent house","Independent house","Villa","Independent house","Independent house","Independent house","Apartment top floor","Apartment top floor","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Villa","Independent house","Apartment top floor","Independent house","Independent house","Villa","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Villa","Independent house","Independent house","Apartment top floor","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Villa","Independent house","Independent house","Independent house","Independent house","Villa","Independent house","Villa","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Apartment top floor","Apartment top floor","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Villa","Independent house","Independent house","Independent house","Independent house","Apartment top floor","Independent house","Independent house","Villa","Apartment top floor","Independent house","Independent house","Independent house","Apartment top floor","Apartment top floor","Apartment top floor","Apartment top floor","Apartment top floor","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Apartment top floor","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Independent house","Apartment top floor","Apartment top floor","Villa","Apartment top floor","Independent house","Apartment top floor","Apartment top floor","Apartment top floor","Independent house","Apartment top floor"]},{"c":"C_Q5","q":"Approximate monthly household income?","t":"Choice","o":["Below 30k","30-60k","60k-1L","1L-2L","Above 2L"],"v":["30-60k","30-60k","60k-1L","1L-2L","1L-2L","60k-1L","60k-1L","1L-2L","30-60k","60k-1L","60k-1L","1L-2L","60k-1L","1L-2L","1L-2L","30-60k","1L-2L","Below 30k","60k-1L","1L-2L","Below 30k","30-60k","1L-2L","60k-1L","30-60k","60k-1L","30-60k","1L-2L","60k-1L","30-60k","1L-2L","1L-2L","60k-1L","30-60k","30-60k","30-60k","60k-1L","Above 2L","30-60k","1L-2L","Below 30k","Below 30k","30-60k","Above 2L","1L-2L","1L-2L","60k-1L","1L-2L","1L-2L","60k-1L","Above 2L","60k-1L","60k-1L","1L-2L","60k-1L","1L-2L","1L-2L","60k-1L","1L-2L","60k-1L","30-60k","1L-2L","60k-1L","60k-1L","Above 2L","Above 2L","Above 2L","30-60k","60k-1L","Below 30k","60k-1L","30-60k","60k-1L","1L-2L","1L-2L","30-60k","30-60k","1L-2L","1L-2L","30-60k","1L-2L","1L-2L","Below 30k","1L-2L","1L-2L","1L-2L","1L-2L","30-60k","1L-2L","Above 2L","60k-1L","60k-1L","60k-1L","1L-2L","Above 2L","1L-2L","1L-2L","60k-1L","1L-2L","60k-1L","1L-2L","60k-1L","Above 2L","30-60k","30-60k","60k-1L","30-60k","1L-2L","30-60k","60k-1L","Above 2L","Above 2L","30-60k","60k-1L","Below 30k","30-60k","1L-2L","60k-1L","30-60k","60k-1L","60k-1L","60k-1L","60k-1L","1L-2L","1L-2L","1L-2L","Below 30k","1L-2L","60k-1L","30-60k","1L-2L","1L-2L","Above 2L","Above 2L","60k-1L","30-60k","60k-1L","60k-1L","1L-2L","30-60k","1L-2L","30-60k","30-60k","60k-1L","Above 2L","60k-1L","1L-2L","60k-1L","30-60k","1L-2L","30-60k","1L-2L","60k-1L","Above 2L","1L-2L","60k-1L","60k-1L","Above 2L","1L-2L","30-60k","60k-1L","30-60k","60k-1L","60k-1L","1L-2L","30-60k","1L-2L","Above 2L","60k-1L","1L-2L","1L-2L","60k-1L","1L-2L","60k-1L","30-60k","30-60k","Above 2L","30-60k","60k-1L","60k-1L","1L-2L","1L-2L","60k-1L","30-60k","60k-1L","60k-1L","60k-1L","1L-2L","Below 30k","Below 30k","60k-1L","1L-2L","60k-1L","1L-2L","Above 2L","Above 2L","1L-2L","60k-1L","1L-2L","30-60k","60k-1L","1L-2L","1L-2L","1L-2L","1L-2L","Below 30k","Above 2L","Above 2L","60k-1L","60k-1L","30-60k","60k-1L","60k-1L","60k-1L","30-60k","30-60k","30-60k","60k-1L","1L-2L","1L-2L","30-60k","60k-1L","60k-1L","60k-1L","30-60k","60k-1L","30-60k","60k-1L","1L-2L","Above 2L","60k-1L","60k-1L","Below 30k","1L-2L","60k-1L","1L-2L","1L-2L","1L-2L","60k-1L","60k-1L","1L-2L","30-60k","Above 2L","30-60k","60k-1L","60k-1L","1L-2L","Above 2L","30-60k","1L-2L"]},{"c":"C_Q6","q":"Approximate monthly electricity bill?","t":"Choice","o":["Below 800","800-1500","1500-3000","3000-5000","Above 5000"],"v":["800-1500","1500-3000","Above 5000","1500-3000","3000-5000","800-1500","1500-3000","1500-3000","1500-3000","1500-3000","Above 5000","3000-5000","Above 5000","1500-3000","1500-3000","1500-3000","Above 5000","800-1500","3000-5000","1500-3000","1500-3000","1500-3000","800-1500","800-1500","3000-5000","1500-3000","3000-5000","800-1500","3000-5000","3000-5000","1500-3000","1500-3000","Above 5000","3000-5000","3000-5000","1500-3000","Above 5000","1500-3000","Above 5000","800-1500","1500-3000","1500-3000","1500-3000","3000-5000","Above 5000","1500-3000","1500-3000","1500-3000","3000-5000","3000-5000","800-1500","3000-5000","1500-3000","1500-3000","Above 5000","3000-5000","800-1500","1500-3000","Above 5000","3000-5000","1500-3000","1500-3000","Above 5000","800-1500","3000-5000","3000-5000","800-1500","3000-5000","3000-5000","Above 5000","1500-3000","3000-5000","3000-5000","3000-5000","3000-5000","800-1500","3000-5000","1500-3000","3000-5000","1500-3000","1500-3000","3000-5000","3000-5000","1500-3000","Above 5000","800-1500","3000-5000","1500-3000","1500-3000","1500-3000","Above 5000","1500-3000","Above 5000","800-1500","800-1500","3000-5000","1500-3000","800-1500","Above 5000","800-1500","3000-5000","1500-3000","3000-5000","1500-3000","Above 5000","3000-5000","3000-5000","3000-5000","3000-5000","800-1500","Above 5000","3000-5000","3000-5000","1500-3000","1500-3000","Above 5000","Above 5000","800-1500","Above 5000","800-1500","1500-3000","1500-3000","1500-3000","1500-3000","800-1500","3000-5000","800-1500","1500-3000","Above 5000","800-1500","800-1500","800-1500","3000-5000","Above 5000","800-1500","3000-5000","3000-5000","3000-5000","1500-3000","1500-3000","800-1500","1500-3000","800-1500","800-1500","800-1500","1500-3000","3000-5000","3000-5000","Above 5000","3000-5000","1500-3000","3000-5000","Above 5000","1500-3000","800-1500","3000-5000","3000-5000","800-1500","800-1500","Above 5000","3000-5000","3000-5000","Above 5000","800-1500","1500-3000","3000-5000","Above 5000","Above 5000","1500-3000","800-1500","3000-5000","800-1500","3000-5000","1500-3000","800-1500","3000-5000","1500-3000","Above 5000","1500-3000","3000-5000","800-1500","1500-3000","1500-3000","1500-3000","Above 5000","1500-3000","1500-3000","Above 5000","3000-5000","1500-3000","Above 5000","3000-5000","Above 5000","800-1500","3000-5000","800-1500","1500-3000","3000-5000","1500-3000","3000-5000","800-1500","1500-3000","800-1500","1500-3000","3000-5000","800-1500","1500-3000","3000-5000","1500-3000","Above 5000","3000-5000","3000-5000","800-1500","3000-5000","1500-3000","1500-3000","800-1500","800-1500","Above 5000","800-1500","3000-5000","3000-5000","1500-3000","3000-5000","Above 5000","1500-3000","800-1500","1500-3000","1500-3000","800-1500","3000-5000","1500-3000","800-1500","1500-3000","3000-5000","1500-3000","800-1500","3000-5000","1500-3000","1500-3000","1500-3000","3000-5000","1500-3000","1500-3000","1500-3000","3000-5000","3000-5000","1500-3000","1500-3000","Above 5000"]},{"c":"C_Q7","q":"How many power cuts do you experience in a typical week?","t":"Choice","o":["None","1-2","3-5","6-10","More than 10"],"v":["3-5","3-5","6-10","None","1-2","6-10","6-10","More than 10","More than 10","1-2","3-5","1-2","3-5","None","3-5","3-5","3-5","3-5","More than 10","1-2","3-5","6-10","1-2","3-5","6-10","1-2","None","6-10","1-2","More than 10","None","3-5","1-2","1-2","3-5","6-10","1-2","1-2","3-5","6-10","1-2","More than 10","More than 10","3-5","1-2","1-2","More than 10","3-5","None","3-5","3-5","3-5","3-5","3-5","6-10","More than 10","6-10","3-5","3-5","1-2","3-5","More than 10","1-2","3-5","3-5","1-2","6-10","3-5","1-2","6-10","More than 10","1-2","More than 10","1-2","3-5","3-5","6-10","1-2","3-5","1-2","3-5","1-2","3-5","3-5","3-5","None","6-10","None","More than 10","6-10","1-2","3-5","6-10","More than 10","6-10","1-2","6-10","3-5","3-5","None","3-5","6-10","6-10","3-5","6-10","1-2","More than 10","3-5","3-5","3-5","1-2","3-5","None","1-2","None","3-5","None","More than 10","3-5","More than 10","More than 10","3-5","1-2","3-5","1-2","1-2","1-2","3-5","None","3-5","1-2","1-2","3-5","1-2","3-5","1-2","6-10","1-2","6-10","None","1-2","1-2","3-5","1-2","6-10","1-2","More than 10","None","None","More than 10","6-10","None","3-5","1-2","1-2","1-2","1-2","6-10","1-2","3-5","3-5","6-10","3-5","1-2","More than 10","More than 10","6-10","3-5","1-2","6-10","3-5","None","3-5","3-5","3-5","None","1-2","1-2","6-10","1-2","6-10","1-2","6-10","1-2","1-2","6-10","3-5","3-5","1-2","1-2","6-10","None","6-10","3-5","3-5","More than 10","6-10","1-2","1-2","1-2","More than 10","More than 10","6-10","1-2","More than 10","1-2","1-2","6-10","None","1-2","1-2","6-10","1-2","3-5","3-5","3-5","3-5","1-2","1-2","6-10","1-2","1-2","1-2","1-2","1-2","6-10","1-2","3-5","None","None","3-5","3-5","6-10","6-10","None","3-5","3-5","3-5","6-10","3-5","3-5","3-5","More than 10","1-2","1-2","None","6-10","6-10","1-2","None"]},{"c":"C_Q8","q":"How long does a typical power cut last?","t":"Choice","o":["Under 15 min","15-60 min","1-3 hours","More than 3 hours"],"v":["15-60 min","Under 15 min","15-60 min","Under 15 min","1-3 hours","15-60 min","More than 3 hours","More than 3 hours","Under 15 min","1-3 hours","15-60 min","1-3 hours","More than 3 hours","Under 15 min","15-60 min","15-60 min","1-3 hours","Under 15 min","15-60 min","15-60 min","15-60 min","1-3 hours","15-60 min","1-3 hours","Under 15 min","15-60 min","Under 15 min","More than 3 hours","More than 3 hours","1-3 hours","Under 15 min","15-60 min","1-3 hours","More than 3 hours","1-3 hours","1-3 hours","15-60 min","15-60 min","Under 15 min","15-60 min","15-60 min","More than 3 hours","15-60 min","1-3 hours","1-3 hours","1-3 hours","15-60 min","1-3 hours","Under 15 min","15-60 min","15-60 min","More than 3 hours","15-60 min","1-3 hours","15-60 min","15-60 min","1-3 hours","15-60 min","Under 15 min","1-3 hours","More than 3 hours","15-60 min","15-60 min","Under 15 min","1-3 hours","Under 15 min","15-60 min","15-60 min","Under 15 min","15-60 min","1-3 hours","1-3 hours","15-60 min","15-60 min","15-60 min","Under 15 min","1-3 hours","Under 15 min","1-3 hours","More than 3 hours","15-60 min","Under 15 min","1-3 hours","15-60 min","1-3 hours","Under 15 min","1-3 hours","Under 15 min","1-3 hours","1-3 hours","15-60 min","Under 15 min","Under 15 min","15-60 min","1-3 hours","15-60 min","Under 15 min","15-60 min","1-3 hours","Under 15 min","More than 3 hours","1-3 hours","1-3 hours","Under 15 min","1-3 hours","More than 3 hours","15-60 min","1-3 hours","15-60 min","15-60 min","15-60 min","More than 3 hours","Under 15 min","Under 15 min","Under 15 min","1-3 hours","Under 15 min","More than 3 hours","1-3 hours","1-3 hours","1-3 hours","15-60 min","1-3 hours","Under 15 min","15-60 min","15-60 min","15-60 min","1-3 hours","Under 15 min","15-60 min","More than 3 hours","More than 3 hours","Under 15 min","15-60 min","15-60 min","15-60 min","1-3 hours","15-60 min","15-60 min","Under 15 min","1-3 hours","Under 15 min","More than 3 hours","More than 3 hours","15-60 min","Under 15 min","15-60 min","Under 15 min","Under 15 min","1-3 hours","More than 3 hours","Under 15 min","1-3 hours","15-60 min","15-60 min","1-3 hours","1-3 hours","Under 15 min","Under 15 min","15-60 min","More than 3 hours","15-60 min","15-60 min","1-3 hours","More than 3 hours","Under 15 min","1-3 hours","Under 15 min","1-3 hours","1-3 hours","1-3 hours","Under 15 min","15-60 min","15-60 min","15-60 min","Under 15 min","1-3 hours","1-3 hours","1-3 hours","1-3 hours","15-60 min","Under 15 min","Under 15 min","15-60 min","15-60 min","1-3 hours","1-3 hours","Under 15 min","More than 3 hours","15-60 min","15-60 min","Under 15 min","More than 3 hours","1-3 hours","15-60 min","1-3 hours","15-60 min","15-60 min","1-3 hours","Under 15 min","15-60 min","1-3 hours","1-3 hours","Under 15 min","1-3 hours","1-3 hours","15-60 min","Under 15 min","Under 15 min","1-3 hours","Under 15 min","More than 3 hours","More than 3 hours","15-60 min","1-3 hours","15-60 min","15-60 min","15-60 min","1-3 hours","15-60 min","More than 3 hours","1-3 hours","15-60 min","Under 15 min","15-60 min","15-60 min","1-3 hours","Under 15 min","Under 15 min","Under 15 min","15-60 min","More than 3 hours","More than 3 hours","More than 3 hours","Under 15 min","1-3 hours","15-60 min","15-60 min","Under 15 min","1-3 hours","15-60 min","1-3 hours","1-3 hours","15-60 min","15-60 min","Under 15 min","Under 15 min","Under 15 min","1-3 hours","Under 15 min"]},{"c":"C_Q9","q":"Do you own an inverter or home UPS?","t":"Choice","o":["Yes","No"],"v":["Yes","Yes","Yes","No","No","Yes","Yes","Yes","Yes","No","Yes","No","Yes","Yes","Yes","Yes","Yes","Yes","Yes","No","No","No","No","Yes","No","Yes","No","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","Yes","No","Yes","No","No","Yes","Yes","No","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","No","No","No","Yes","Yes","No","Yes","Yes","No","No","Yes","No","Yes","Yes","No","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","No","No","Yes","No","No","No","Yes","Yes","Yes","Yes","Yes","Yes","No","Yes","No","Yes","No","Yes","No","Yes","Yes","Yes","Yes","No","Yes","No","Yes","Yes","No","No","Yes","No","No","Yes","No","No","Yes","Yes","Yes","No","Yes","No","No","No","Yes","Yes","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","No","Yes","No","Yes","Yes","Yes","Yes","No","No","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","Yes","Yes","No","No","Yes","No","No","Yes","Yes","No","Yes","No","No","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","No","Yes","No","Yes","Yes","No","Yes","No","No","Yes","Yes","No","Yes","Yes","Yes","Yes","Yes","Yes","No","No","Yes","No","Yes","No","Yes","No","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes"]},{"c":"C_Q10","q":"If yes, which brand?","t":"Text","o":null,"v":["V-Guard","V-Guard","Luminous",null,null,"Amaron","Microtek","Microtek","Amaron",null,"Livguard",null,"V-Guard","Luminous","Luminous","V-Guard","Livguard","V-Guard","V-Guard",null,null,null,null,"Microtek",null,"Amaron",null,"Livguard","Luminous","Luminous",null,"Microtek","Amaron","V-Guard","Livguard","Luminous",null,"Livguard",null,null,"Amaron","V-Guard",null,"Exide","Exide","Exide","Luminous","V-Guard","Amaron","V-Guard","Livguard","Livguard","Luminous","Luminous","Microtek","Amaron","Luminous",null,null,null,"Microtek","V-Guard",null,"Livguard","Luminous",null,null,"Microtek",null,"V-Guard","Exide",null,"Luminous","V-Guard","Luminous","Exide","V-Guard",null,"Luminous","Microtek","Livguard","V-Guard","Luminous",null,"Microtek","V-Guard","Microtek","Luminous","Microtek",null,"Microtek","Luminous","Livguard","Amaron","Exide",null,"Exide","Microtek","V-Guard","Luminous","Microtek","Luminous","Luminous","Amaron","Luminous","Luminous","Luminous","Microtek","Microtek","V-Guard","Luminous","Exide",null,null,"Exide",null,null,null,"Livguard","Luminous","Microtek","V-Guard","Microtek","Livguard",null,"Microtek",null,"Exide",null,"Exide",null,"Microtek","V-Guard","V-Guard","V-Guard",null,"V-Guard",null,"Microtek","Microtek",null,null,"Microtek",null,null,"V-Guard",null,null,"V-Guard","Microtek","Amaron",null,"Exide",null,null,null,"Exide","Luminous","Exide","V-Guard","Amaron","V-Guard","Exide",null,"V-Guard","Microtek","Livguard","Exide",null,"Amaron",null,"Livguard","Exide","V-Guard","Microtek",null,null,"V-Guard","V-Guard","Luminous","Microtek",null,"V-Guard","V-Guard","Microtek","Luminous","Microtek","Amaron",null,null,"V-Guard",null,null,"Microtek","Livguard",null,"Microtek",null,null,"Luminous","V-Guard","Luminous","Livguard","Microtek","Luminous","Luminous","V-Guard",null,"Luminous","Microtek",null,"V-Guard",null,"Luminous","Luminous",null,"Luminous",null,null,"Luminous","Luminous",null,"Luminous","V-Guard","Microtek","V-Guard","Amaron","Microtek",null,null,"V-Guard",null,"V-Guard",null,"Microtek",null,"Microtek","V-Guard","Amaron","V-Guard","V-Guard",null,"Microtek","Amaron","V-Guard",null,"V-Guard","Amaron","Luminous","Microtek"]},{"c":"C_Q11","q":"How much do you know about the PM Surya Ghar rooftop solar subsidy scheme?","t":"Scale 1-5","o":null,"v":[4,3,2,4,3,1,3,2,1,5,3,4,3,1,1,3,3,4,2,2,4,3,4,3,3,5,3,2,2,4,4,4,3,5,3,5,4,3,3,3,2,4,4,3,3,2,3,4,3,4,4,3,5,4,4,2,3,3,2,5,3,3,5,3,3,5,2,2,4,4,4,4,3,3,4,3,4,2,2,3,2,5,2,4,3,2,4,3,4,3,4,1,4,4,4,2,1,5,2,2,4,4,3,3,3,2,3,3,3,3,4,4,4,4,3,3,3,4,4,4,3,2,3,5,4,4,2,3,3,3,4,1,4,5,4,1,3,3,4,3,1,3,2,1,4,4,2,4,4,3,3,4,2,4,3,2,4,3,4,4,1,3,4,5,2,3,5,4,5,3,3,2,3,3,3,4,3,3,1,3,4,2,4,3,4,2,4,5,4,3,5,4,4,4,3,4,4,4,3,4,5,3,4,2,2,2,4,3,2,5,4,4,1,3,3,4,3,3,2,4,3,3,3,5,5,5,4,5,3,3,1,3,3,4,5,4,5,3,4,2,3,4,2,4,1,2,4,2,3,4]},{"c":"C_Q12","q":"What is your current status on rooftop solar?","t":"Choice","o":["Already installed","Applied","Actively considering","Thought about it","Not considering"],"v":["Actively considering","Applied","Thought about it","Actively considering","Actively considering","Not considering","Already installed","Not considering","Actively considering","Already installed","Actively considering","Thought about it","Thought about it","Not considering","Thought about it","Actively considering","Thought about it","Already installed","Not considering","Already installed","Actively considering","Thought about it","Applied","Actively considering","Actively considering","Actively considering","Thought about it","Thought about it","Actively considering","Actively considering","Actively considering","Thought about it","Actively considering","Thought about it","Actively considering","Thought about it","Thought about it","Applied","Actively considering","Applied","Not considering","Actively considering","Not considering","Actively considering","Actively considering","Thought about it","Thought about it","Thought about it","Applied","Actively considering","Actively considering","Not considering","Actively considering","Applied","Actively considering","Not considering","Thought about it","Not considering","Not considering","Actively considering","Not considering","Not considering","Thought about it","Actively considering","Actively considering","Actively considering","Not considering","Not considering","Thought about it","Applied","Thought about it","Applied","Thought about it","Not considering","Applied","Actively considering","Actively considering","Actively considering","Thought about it","Actively considering","Actively considering","Applied","Thought about it","Actively considering","Thought about it","Thought about it","Already installed","Not considering","Actively considering","Already installed","Actively considering","Not considering","Actively considering","Thought about it","Actively considering","Not considering","Thought about it","Thought about it","Thought about it","Thought about it","Already installed","Not considering","Already installed","Applied","Not considering","Not considering","Not considering","Actively considering","Not considering","Actively considering","Thought about it","Thought about it","Not considering","Actively considering","Not considering","Actively considering","Thought about it","Applied","Actively considering","Thought about it","Not considering","Already installed","Actively considering","Thought about it","Not considering","Actively considering","Not considering","Actively considering","Thought about it","Already installed","Applied","Not considering","Thought about it","Actively considering","Applied","Thought about it","Actively considering","Thought about it","Not considering","Not considering","Not considering","Thought about it","Thought about it","Not considering","Thought about it","Already installed","Thought about it","Actively considering","Actively considering","Actively considering","Thought about it","Thought about it","Not considering","Actively considering","Already installed","Actively considering","Actively considering","Not considering","Actively considering","Actively considering","Applied","Thought about it","Actively considering","Thought about it","Not considering","Thought about it","Actively considering","Not considering","Thought about it","Not considering","Actively considering","Thought about it","Thought about it","Thought about it","Thought about it","Not considering","Thought about it","Thought about it","Not considering","Thought about it","Applied","Actively considering","Thought about it","Applied","Actively considering","Not considering","Actively considering","Already installed","Actively considering","Thought about it","Thought about it","Already installed","Actively considering","Actively considering","Applied","Thought about it","Actively considering","Thought about it","Thought about it","Applied","Actively considering","Actively considering","Already installed","Thought about it","Thought about it","Thought about it","Actively considering","Applied","Not considering","Applied","Thought about it","Thought about it","Not considering","Not considering","Thought about it","Actively considering","Thought about it","Already installed","Thought about it","Already installed","Applied","Not considering","Actively considering","Thought about it","Actively considering","Actively considering","Thought about it","Already installed","Actively considering","Thought about it","Not considering","Thought about it","Thought about it","Applied","Not considering","Not considering","Applied","Actively considering","Thought about it","Actively considering","Already installed","Applied","Not considering","Not considering","Thought about it","Thought about it","Thought about it","Actively considering","Not considering","Applied"]},{"c":"C_Q13","q":"What is the BIGGEST thing stopping you from installing solar?","t":"Choice","o":["Upfront cost","Don't trust installers","Roof not suitable","Process too complex","Doubt the savings","Don't know whom to contact","Nothing, I plan to install"],"v":["Process too complex","Process too complex","Nothing, I plan to install","Upfront cost","Upfront cost","Upfront cost",null,"Upfront cost","Upfront cost",null,"Don't trust installers","Upfront cost","Process too complex","Process too complex","Upfront cost","Upfront cost","Process too complex",null,"Process too complex",null,"Process too complex","Upfront cost","Nothing, I plan to install","Upfront cost","Don't know whom to contact","Upfront cost","Upfront cost","Upfront cost","Doubt the savings","Upfront cost","Don't trust installers","Doubt the savings","Don't trust installers","Upfront cost","Don't know whom to contact","Doubt the savings","Upfront cost","Process too complex","Upfront cost","Process too complex","Nothing, I plan to install","Don't know whom to contact","Nothing, I plan to install","Upfront cost","Upfront cost","Upfront cost","Process too complex","Upfront cost","Nothing, I plan to install","Don't trust installers","Doubt the savings","Don't trust installers","Don't trust installers","Process too complex","Don't trust installers","Don't trust installers","Doubt the savings","Roof not suitable","Process too complex","Don't trust installers","Upfront cost","Don't know whom to contact","Upfront cost","Upfront cost","Process too complex","Process too complex","Don't know whom to contact","Upfront cost","Don't trust installers","Nothing, I plan to install","Don't know whom to contact","Nothing, I plan to install","Upfront cost","Nothing, I plan to install","Process too complex","Don't know whom to contact","Process too complex","Doubt the savings","Doubt the savings","Process too complex","Don't trust installers","Nothing, I plan to install","Process too complex","Doubt the savings","Doubt the savings","Upfront cost",null,"Don't trust installers","Upfront cost",null,"Process too complex","Don't know whom to contact","Don't know whom to contact","Process too complex","Don't trust installers","Upfront cost","Don't trust installers","Don't know whom to contact","Nothing, I plan to install","Roof not suitable",null,"Don't trust installers",null,"Process too complex","Process too complex","Process too complex","Don't trust installers","Don't trust installers","Upfront cost","Upfront cost","Doubt the savings","Don't trust installers","Don't know whom to contact","Don't know whom to contact","Upfront cost","Doubt the savings","Doubt the savings","Nothing, I plan to install","Nothing, I plan to install","Process too complex","Don't trust installers",null,"Upfront cost","Process too complex","Doubt the savings","Don't trust installers","Don't know whom to contact","Nothing, I plan to install","Upfront cost",null,"Nothing, I plan to install","Doubt the savings","Process too complex","Process too complex","Nothing, I plan to install","Don't trust installers","Process too complex","Roof not suitable","Nothing, I plan to install","Upfront cost","Upfront cost","Process too complex","Upfront cost","Don't trust installers","Don't know whom to contact",null,"Upfront cost","Nothing, I plan to install","Doubt the savings","Upfront cost","Process too complex","Upfront cost","Upfront cost","Doubt the savings",null,"Upfront cost","Nothing, I plan to install","Don't know whom to contact","Don't trust installers","Upfront cost","Process too complex","Process too complex","Roof not suitable","Process too complex","Don't know whom to contact","Upfront cost","Process too complex","Process too complex","Don't know whom to contact","Doubt the savings","Doubt the savings","Don't know whom to contact","Upfront cost","Nothing, I plan to install","Don't trust installers","Upfront cost","Upfront cost","Don't trust installers","Process too complex","Upfront cost","Don't know whom to contact","Doubt the savings","Upfront cost","Process too complex","Process too complex","Don't trust installers","Upfront cost",null,"Don't trust installers","Nothing, I plan to install","Don't trust installers",null,"Roof not suitable","Process too complex","Process too complex","Doubt the savings","Don't trust installers","Process too complex","Upfront cost","Nothing, I plan to install","Process too complex","Upfront cost",null,"Upfront cost","Don't trust installers","Doubt the savings","Don't trust installers","Nothing, I plan to install","Don't know whom to contact","Process too complex","Don't know whom to contact","Upfront cost","Don't know whom to contact","Process too complex","Doubt the savings","Don't know whom to contact","Upfront cost",null,"Don't know whom to contact",null,"Process too complex","Nothing, I plan to install","Process too complex","Upfront cost","Don't trust installers","Upfront cost","Don't know whom to contact",null,"Nothing, I plan to install","Upfront cost","Don't trust installers","Don't know whom to contact","Upfront cost","Don't know whom to contact","Process too complex","Upfront cost","Nothing, I plan to install","Don't know whom to contact","Upfront cost","Don't know whom to contact",null,"Don't know whom to contact","Doubt the savings","Upfront cost","Process too complex","Don't trust installers","Doubt the savings","Don't trust installers","Don't know whom to contact","Upfront cost"]},{"c":"C_Q14","q":"Whom would you trust MOST to install rooftop solar on your home?","t":"Choice","o":["My regular electrician","Local solar company","National solar brand","An electrical brand I already use","The electricity board","Don't know"],"v":["My regular electrician","National solar brand","My regular electrician","An electrical brand I already use","National solar brand","Local solar company","My regular electrician","National solar brand","An electrical brand I already use","National solar brand","An electrical brand I already use","An electrical brand I already use","An electrical brand I already use","An electrical brand I already use","An electrical brand I already use","An electrical brand I already use","National solar brand","National solar brand","My regular electrician","National solar brand","An electrical brand I already use","My regular electrician","An electrical brand I already use","An electrical brand I already use","My regular electrician","An electrical brand I already use","My regular electrician","An electrical brand I already use","An electrical brand I already use","My regular electrician","Don't know","Local solar company","An electrical brand I already use","National solar brand","An electrical brand I already use","My regular electrician","National solar brand","An electrical brand I already use","National solar brand","My regular electrician","My regular electrician","National solar brand","An electrical brand I already use","An electrical brand I already use","An electrical brand I already use","The electricity board","Local solar company","The electricity board","National solar brand","The electricity board","My regular electrician","National solar brand","An electrical brand I already use","My regular electrician","National solar brand","National solar brand","National solar brand","My regular electrician","Local solar company","My regular electrician","The electricity board","National solar brand","An electrical brand I already use","My regular electrician","My regular electrician","My regular electrician","Don't know","My regular electrician","Local solar company","An electrical brand I already use","An electrical brand I already use","My regular electrician","The electricity board","Local solar company","Local solar company","My regular electrician","An electrical brand I already use","Local solar company","National solar brand","National solar brand","National solar brand","My regular electrician","My regular electrician","An electrical brand I already use","The electricity board","My regular electrician","My regular electrician","An electrical brand I already use","An electrical brand I already use","An electrical brand I already use","My regular electrician","The electricity board","An electrical brand I already use","My regular electrician","My regular electrician","My regular electrician","National solar brand","Don't know","My regular electrician","Local solar company","My regular electrician","An electrical brand I already use","An electrical brand I already use","National solar brand","My regular electrician","My regular electrician","Local solar company","An electrical brand I already use","Local solar company","My regular electrician","Local solar company","National solar brand","My regular electrician","My regular electrician","An electrical brand I already use","Local solar company","National solar brand","My regular electrician","National solar brand","Local solar company","The electricity board","Don't know","National solar brand","Local solar company","National solar brand","National solar brand","My regular electrician","My regular electrician","My regular electrician","My regular electrician","My regular electrician","An electrical brand I already use","An electrical brand I already use","An electrical brand I already use","National solar brand","An electrical brand I already use","An electrical brand I already use","National solar brand","Local solar company","An electrical brand I already use","My regular electrician","My regular electrician","National solar brand","My regular electrician","An electrical brand I already use","My regular electrician","National solar brand","My regular electrician","My regular electrician","National solar brand","Local solar company","My regular electrician","My regular electrician","An electrical brand I already use","An electrical brand I already use","National solar brand","My regular electrician","Don't know","Don't know","Local solar company","The electricity board","My regular electrician","An electrical brand I already use","My regular electrician","Local solar company","My regular electrician","An electrical brand I already use","My regular electrician","My regular electrician","Local solar company","National solar brand","National solar brand","The electricity board","My regular electrician","National solar brand","An electrical brand I already use","National solar brand","My regular electrician","An electrical brand I already use","Local solar company","My regular electrician","The electricity board","My regular electrician","An electrical brand I already use","An electrical brand I already use","Don't know","Local solar company","My regular electrician","National solar brand","My regular electrician","National solar brand","My regular electrician","National solar brand","Local solar company","An electrical brand I already use","Don't know","My regular electrician","An electrical brand I already use","An electrical brand I already use","An electrical brand I already use","Don't know","An electrical brand I already use","National solar brand","An electrical brand I already use","My regular electrician","My regular electrician","My regular electrician","National solar brand","My regular electrician","National solar brand","My regular electrician","Local solar company","My regular electrician","National solar brand","My regular electrician","Don't know","An electrical brand I already use","An electrical brand I already use","An electrical brand I already use","An electrical brand I already use","Don't know","National solar brand","My regular electrician","An electrical brand I already use","Local solar company","My regular electrician","Local solar company","An electrical brand I already use","An electrical brand I already use","Local solar company","Local solar company","National solar brand","National solar brand","My regular electrician","National solar brand","National solar brand","My regular electrician","National solar brand","National solar brand","National solar brand","My regular electrician","An electrical brand I already use","My regular electrician","National solar brand","My regular electrician","An electrical brand I already use","My regular electrician","An electrical brand I already use","The electricity board","My regular electrician"]},{"c":"C_Q15","q":"How important is the BRAND of the inverter and other equipment inside a solar system?","t":"Scale 1-5","o":null,"v":[3,3,2,2,4,3,3,3,4,4,4,5,5,4,5,4,4,5,4,4,2,3,3,4,4,5,5,4,5,4,4,2,5,4,5,5,4,5,3,4,3,4,4,5,5,4,3,4,4,3,4,5,5,4,4,4,4,4,4,5,4,4,5,5,4,4,5,3,4,4,4,5,4,4,3,4,5,3,5,4,5,5,4,4,3,4,5,4,3,4,3,3,5,4,3,3,4,4,3,3,2,4,4,4,4,5,4,3,3,4,4,5,5,3,5,4,5,5,4,3,3,4,4,4,3,4,5,3,4,4,3,4,4,4,4,5,4,4,4,4,3,4,3,4,4,5,5,4,5,4,3,4,5,5,4,4,5,4,4,4,4,4,4,4,3,4,4,3,5,4,5,5,4,4,4,4,3,3,4,3,5,4,4,4,5,4,3,4,4,4,3,2,2,5,3,3,5,2,4,4,4,5,2,4,4,4,3,5,4,4,4,5,4,4,3,4,4,4,4,4,4,3,3,3,4,5,4,3,3,4,4,4,3,4,5,3,4,5,5,5,5,3,5,5,3,3,4,3,4,4]},{"c":"C_Q16","q":"How much extra would you pay for a system built with a known Indian brand's inverter and a proper warranty?","t":"Choice","o":["Nothing","1-3%","4-6%","7-10%","Above 10%"],"v":["1-3%","Nothing","1-3%","Nothing","1-3%","1-3%","1-3%","1-3%","7-10%","1-3%","4-6%","Above 10%","4-6%","Nothing","Nothing","4-6%","Nothing","Nothing","4-6%","7-10%","1-3%","1-3%","1-3%","1-3%","4-6%","4-6%","7-10%","4-6%","Above 10%","4-6%","1-3%","1-3%","7-10%","1-3%","4-6%","Above 10%","1-3%","1-3%","4-6%","4-6%","1-3%","4-6%","1-3%","4-6%","Above 10%","1-3%","1-3%","1-3%","Nothing","1-3%","Nothing","4-6%","1-3%","4-6%","4-6%","4-6%","1-3%","1-3%","4-6%","7-10%","4-6%","Nothing","4-6%","Nothing","1-3%","4-6%","7-10%","1-3%","4-6%","1-3%","7-10%","Above 10%","4-6%","Nothing","1-3%","4-6%","4-6%","1-3%","1-3%","Nothing","4-6%","Above 10%","1-3%","1-3%","Nothing","4-6%","4-6%","4-6%","4-6%","Nothing","1-3%","1-3%","1-3%","7-10%","1-3%","1-3%","1-3%","1-3%","1-3%","1-3%","Nothing","4-6%","4-6%","4-6%","4-6%","1-3%","4-6%","1-3%","Nothing","1-3%","1-3%","4-6%","4-6%","1-3%","7-10%","4-6%","4-6%","4-6%","4-6%","1-3%","1-3%","7-10%","4-6%","4-6%","1-3%","1-3%","4-6%","4-6%","Nothing","1-3%","Nothing","7-10%","1-3%","1-3%","Nothing","4-6%","1-3%","4-6%","4-6%","7-10%","Nothing","4-6%","Nothing","4-6%","1-3%","4-6%","1-3%","1-3%","4-6%","7-10%","4-6%","1-3%","4-6%","4-6%","7-10%","1-3%","4-6%","Nothing","4-6%","Nothing","4-6%","1-3%","1-3%","Nothing","4-6%","4-6%","4-6%","4-6%","7-10%","7-10%","4-6%","4-6%","Nothing","1-3%","Nothing","4-6%","1-3%","1-3%","1-3%","Nothing","1-3%","4-6%","4-6%","Nothing","7-10%","4-6%","1-3%","4-6%","4-6%","7-10%","1-3%","Nothing","1-3%","7-10%","4-6%","1-3%","1-3%","Nothing","Nothing","4-6%","7-10%","4-6%","1-3%","1-3%","7-10%","4-6%","Nothing","4-6%","4-6%","4-6%","4-6%","4-6%","4-6%","1-3%","1-3%","4-6%","4-6%","Nothing","4-6%","4-6%","4-6%","4-6%","4-6%","Nothing","4-6%","4-6%","4-6%","1-3%","Nothing","Nothing","1-3%","1-3%","1-3%","1-3%","4-6%","1-3%","4-6%","1-3%","7-10%","7-10%","4-6%","1-3%","1-3%","7-10%","1-3%","Nothing","4-6%","Nothing","4-6%","1-3%"]},{"c":"C_Q17","q":"Has a smart electricity meter been installed at your home?","t":"Choice","o":["Yes","No","Don't know"],"v":["Yes","Yes","Yes","No","Yes","No","No","No","Yes","Yes","No","Don't know","No","Yes","Yes","No","No","Yes","Yes","Don't know","Yes","Yes","Yes","No","Yes","Don't know","Yes","No","No","Yes","Yes","Don't know","No","Yes","Yes","No","Yes","Yes","Yes","Yes","Don't know","Yes","No","Yes","Yes","No","No","Yes","Yes","Yes","No","Yes","No","Yes","No","Don't know","No","No","No","No","No","Yes","No","No","No","Yes","Yes","Yes","No","Yes","No","No","Yes","No","Yes","No","Yes","No","Yes","No","No","No","No","No","Don't know","Yes","Yes","Don't know","No","Yes","No","Yes","Yes","No","Yes","Yes","Don't know","No","No","No","Yes","No","No","Yes","Yes","Yes","Yes","No","Yes","No","Yes","No","Yes","Yes","Yes","No","Yes","No","Yes","Don't know","No","Don't know","No","No","Yes","Don't know","No","Yes","Yes","No","Don't know","Yes","No","Don't know","No","No","Yes","Yes","Yes","Yes","Yes","No","Yes","No","No","Don't know","Yes","No","Yes","No","No","No","Yes","No","Yes","Don't know","Yes","No","Yes","Yes","No","Yes","Yes","Yes","No","Yes","Yes","Yes","No","Yes","Yes","No","No","Don't know","No","No","Yes","No","No","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","Yes","Yes","No","No","No","Don't know","Yes","No","Yes","No","Yes","Yes","No","No","Don't know","No","No","Don't know","No","No","No","No","Yes","No","Don't know","No","Yes","Yes","No","Yes","No","Yes","No","No","Don't know","Yes","No","Yes","Yes","Yes","Don't know","No","No","Don't know","Don't know","No","Yes","Yes","No","No","No","Yes","Yes","No","No","No","Don't know","Yes","Yes","Yes","Yes","No"]},{"c":"C_Q18","q":"Have you heard that electricity may cost more in evening hours and less in daytime (Time-of-Day tariff)?","t":"Choice","o":["Yes","No"],"v":["No","Yes","Yes","Yes","Yes","No","No","No","Yes","No","Yes","No","Yes","No","Yes","No","Yes","No","Yes","Yes","No","Yes","Yes","Yes","Yes","Yes","Yes","No","Yes","No","No","Yes","Yes","Yes","Yes","No","Yes","Yes","No","Yes","Yes","No","Yes","Yes","No","No","Yes","No","No","Yes","Yes","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","No","No","Yes","No","Yes","No","Yes","Yes","No","Yes","No","Yes","Yes","Yes","Yes","No","Yes","No","Yes","Yes","Yes","No","Yes","No","No","Yes","Yes","Yes","No","No","No","No","Yes","Yes","No","Yes","No","Yes","Yes","No","No","Yes","Yes","No","Yes","No","No","Yes","No","No","Yes","No","No","No","Yes","Yes","No","Yes","No","No","Yes","Yes","Yes","No","No","Yes","No","Yes","No","Yes","Yes","No","Yes","Yes","Yes","No","No","Yes","No","No","Yes","No","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","No","Yes","No","Yes","No","No","Yes","Yes","Yes","Yes","No","No","Yes","No","No","Yes","Yes","No","No","No","Yes","Yes","No","Yes","No","No","Yes","No","No","No","Yes","Yes","Yes","No","No","No","Yes","No","No","No","Yes","Yes","Yes","Yes","No","Yes","No","Yes","No","Yes","No","Yes","No","Yes","No","Yes","Yes","No","Yes","Yes","Yes","No","No","Yes","No","No","Yes","Yes","No","Yes","No","Yes","Yes","No","No","No","Yes","No","Yes","No","Yes","No","No","No","Yes","Yes","Yes","No","No","Yes","Yes","No","Yes","No"]},{"c":"C_Q19","q":"How interested would you be in adding a battery so solar power can be used at night?","t":"Scale 1-5","o":null,"v":[4,4,5,3,5,5,4,4,5,3,3,3,4,4,4,3,4,5,3,4,4,4,4,5,3,4,3,4,3,4,3,4,3,4,5,4,4,4,4,5,4,5,5,4,2,3,4,4,4,4,4,5,4,4,5,4,3,4,4,4,4,4,4,5,4,4,4,3,5,4,4,3,5,5,5,4,4,5,5,4,5,5,4,5,4,2,5,3,5,4,3,2,4,5,4,4,5,3,5,4,4,4,4,4,4,4,4,4,3,4,4,4,4,3,5,5,3,5,5,5,4,3,4,4,4,4,4,3,3,4,3,3,4,4,5,4,4,4,4,2,4,4,4,4,5,4,5,2,4,4,5,4,4,4,4,3,5,5,3,3,4,4,4,5,4,5,5,3,3,5,5,4,5,4,4,4,5,4,4,3,5,3,5,4,5,3,4,4,3,3,3,5,3,5,5,5,5,5,5,5,5,4,4,5,4,4,4,5,4,5,4,5,3,5,4,5,3,4,3,4,3,4,5,5,3,5,2,4,3,2,5,4,4,5,4,4,3,5,4,4,4,4,5,3,4,4,3,3,3,4]},{"c":"C_Q20","q":"What is the most you would pay for a battery giving about 5 hours of evening backup?","t":"Choice","o":["Below 50k","50-75k","75k-1L","1L-1.5L","Above 1.5L"],"v":["Below 50k","50-75k","50-75k","50-75k","75k-1L","50-75k","50-75k","75k-1L","75k-1L","Below 50k","Below 50k","50-75k","Below 50k","50-75k","50-75k","Below 50k","Below 50k","75k-1L","Below 50k","75k-1L","75k-1L","75k-1L","75k-1L","75k-1L","Below 50k","50-75k","Below 50k","75k-1L","75k-1L","50-75k","50-75k","75k-1L","75k-1L","50-75k","Above 1.5L","50-75k","75k-1L","Below 50k","50-75k","Above 1.5L","Below 50k","50-75k","Above 1.5L","75k-1L","Below 50k","75k-1L","75k-1L","50-75k","75k-1L","75k-1L","50-75k","1L-1.5L","75k-1L","50-75k","Above 1.5L","50-75k","Below 50k","Below 50k","50-75k","50-75k","75k-1L","50-75k","50-75k","1L-1.5L","Below 50k","1L-1.5L","Below 50k","50-75k","Below 50k","50-75k","75k-1L","1L-1.5L","75k-1L","1L-1.5L","75k-1L","75k-1L","75k-1L","1L-1.5L","1L-1.5L","50-75k","Below 50k","75k-1L","75k-1L","50-75k","75k-1L","Below 50k","1L-1.5L","75k-1L","Below 50k","75k-1L","Below 50k","50-75k","50-75k","75k-1L","50-75k","75k-1L","75k-1L","75k-1L","1L-1.5L","1L-1.5L","Below 50k","50-75k","Below 50k","1L-1.5L","75k-1L","50-75k","50-75k","50-75k","Below 50k","50-75k","75k-1L","Above 1.5L","50-75k","Below 50k","75k-1L","50-75k","50-75k","75k-1L","75k-1L","50-75k","50-75k","50-75k","75k-1L","50-75k","50-75k","50-75k","75k-1L","50-75k","75k-1L","75k-1L","Below 50k","Below 50k","50-75k","50-75k","50-75k","1L-1.5L","1L-1.5L","1L-1.5L","Below 50k","50-75k","Below 50k","75k-1L","1L-1.5L","Below 50k","1L-1.5L","50-75k","75k-1L","Below 50k","50-75k","50-75k","1L-1.5L","75k-1L","50-75k","1L-1.5L","50-75k","50-75k","1L-1.5L","50-75k","1L-1.5L","50-75k","50-75k","75k-1L","50-75k","50-75k","75k-1L","75k-1L","75k-1L","75k-1L","50-75k","50-75k","1L-1.5L","50-75k","75k-1L","1L-1.5L","Above 1.5L","Below 50k","Above 1.5L","50-75k","50-75k","50-75k","50-75k","50-75k","75k-1L","75k-1L","Below 50k","Below 50k","75k-1L","75k-1L","50-75k","50-75k","75k-1L","1L-1.5L","1L-1.5L","1L-1.5L","1L-1.5L","Above 1.5L","75k-1L","75k-1L","Below 50k","75k-1L","Above 1.5L","50-75k","50-75k","75k-1L","50-75k","50-75k","50-75k","50-75k","50-75k","50-75k","Below 50k","75k-1L","50-75k","50-75k","Above 1.5L","50-75k","50-75k","75k-1L","50-75k","75k-1L","50-75k","1L-1.5L","1L-1.5L","75k-1L","50-75k","1L-1.5L","50-75k","50-75k","Below 50k","75k-1L","1L-1.5L","1L-1.5L","75k-1L","75k-1L","50-75k","Below 50k","Below 50k","1L-1.5L","50-75k","75k-1L","75k-1L","50-75k","Below 50k","75k-1L","75k-1L","Below 50k","Below 50k","50-75k","Below 50k","Below 50k"]},{"c":"C_Q21","q":"Who decides which brand of wire and switchgear is used in your home?","t":"Choice","o":["I decide","My electrician decides","The contractor or builder decides","The architect decides"],"v":["The contractor or builder decides","My electrician decides","The architect decides","My electrician decides","I decide","I decide","My electrician decides","I decide","The contractor or builder decides","The contractor or builder decides","The contractor or builder decides","The architect decides","I decide","The architect decides","My electrician decides","I decide","My electrician decides","I decide","My electrician decides","The contractor or builder decides","I decide","The contractor or builder decides","My electrician decides","My electrician decides","My electrician decides","The contractor or builder decides","I decide","The contractor or builder decides","My electrician decides","I decide","My electrician decides","The contractor or builder decides","My electrician decides","My electrician decides","My electrician decides","My electrician decides","I decide","The contractor or builder decides","The contractor or builder decides","I decide","My electrician decides","The architect decides","My electrician decides","My electrician decides","The architect decides","My electrician decides","My electrician decides","My electrician decides","The contractor or builder decides","My electrician decides","My electrician decides","I decide","My electrician decides","I decide","I decide","I decide","I decide","I decide","I decide","The architect decides","The architect decides","My electrician decides","My electrician decides","The architect decides","I decide","My electrician decides","My electrician decides","The contractor or builder decides","I decide","I decide","The contractor or builder decides","My electrician decides","My electrician decides","My electrician decides","The contractor or builder decides","My electrician decides","I decide","My electrician decides","My electrician decides","My electrician decides","The contractor or builder decides","My electrician decides","I decide","My electrician decides","I decide","I decide","My electrician decides","My electrician decides","My electrician decides","The contractor or builder decides","My electrician decides","My electrician decides","I decide","The contractor or builder decides","My electrician decides","My electrician decides","I decide","I decide","My electrician decides","I decide","I decide","I decide","My electrician decides","My electrician decides","I decide","My electrician decides","My electrician decides","I decide","I decide","I decide","My electrician decides","I decide","My electrician decides","My electrician decides","My electrician decides","My electrician decides","The contractor or builder decides","I decide","The contractor or builder decides","The architect decides","I decide","My electrician decides","I decide","My electrician decides","My electrician decides","My electrician decides","The contractor or builder decides","My electrician decides","My electrician decides","My electrician decides","My electrician decides","My electrician decides","I decide","My electrician decides","My electrician decides","My electrician decides","The contractor or builder decides","The contractor or builder decides","My electrician decides","I decide","I decide","My electrician decides","The contractor or builder decides","My electrician decides","I decide","I decide","My electrician decides","My electrician decides","My electrician decides","I decide","The contractor or builder decides","My electrician decides","My electrician decides","I decide","I decide","My electrician decides","My electrician decides","My electrician decides","The contractor or builder decides","I decide","The contractor or builder decides","My electrician decides","I decide","I decide","The contractor or builder decides","My electrician decides","The contractor or builder decides","I decide","My electrician decides","My electrician decides","I decide","I decide","My electrician decides","My electrician decides","My electrician decides","My electrician decides","My electrician decides","I decide","My electrician decides","The contractor or builder decides","The architect decides","My electrician decides","I decide","My electrician decides","My electrician decides","I decide","I decide","My electrician decides","My electrician decides","I decide","I decide","I decide","I decide","My electrician decides","The contractor or builder decides","My electrician decides","The architect decides","I decide","My electrician decides","The architect decides","My electrician decides","I decide","My electrician decides","I decide","The architect decides","I decide","The contractor or builder decides","My electrician decides","My electrician decides","I decide","The contractor or builder decides","I decide","My electrician decides","The architect decides","The contractor or builder decides","My electrician decides","My electrician decides","I decide","My electrician decides","My electrician decides","I decide","I decide","I decide","I decide","My electrician decides","My electrician decides","The contractor or builder decides","My electrician decides","My electrician decides","My electrician decides","The contractor or builder decides","My electrician decides","I decide","I decide","I decide","I decide","My electrician decides","My electrician decides","The contractor or builder decides","My electrician decides","I decide","My electrician decides","The contractor or builder decides","My electrician decides","The contractor or builder decides","I decide","The architect decides","My electrician decides","I decide","My electrician decides"]},{"c":"C_Q22","q":"Would you pay extra for fire-retardant wiring that is safer in a short circuit?","t":"Choice","o":["Nothing","1-5%","6-10%","11-20%","Above 20%"],"v":["6-10%","11-20%","11-20%","1-5%","1-5%","Nothing","Nothing","1-5%","6-10%","1-5%","Above 20%","Nothing","1-5%","6-10%","1-5%","11-20%","6-10%","11-20%","11-20%","6-10%","6-10%","6-10%","6-10%","6-10%","6-10%","6-10%","Nothing","6-10%","1-5%","Nothing","11-20%","6-10%","1-5%","11-20%","6-10%","6-10%","Nothing","Nothing","6-10%","11-20%","6-10%","6-10%","6-10%","1-5%","6-10%","6-10%","1-5%","11-20%","1-5%","6-10%","6-10%","11-20%","6-10%","6-10%","6-10%","11-20%","6-10%","6-10%","6-10%","Above 20%","6-10%","1-5%","6-10%","6-10%","6-10%","6-10%","1-5%","Nothing","1-5%","1-5%","11-20%","11-20%","6-10%","1-5%","6-10%","11-20%","6-10%","6-10%","11-20%","6-10%","11-20%","Nothing","6-10%","6-10%","6-10%","Nothing","Nothing","1-5%","1-5%","Nothing","1-5%","6-10%","6-10%","6-10%","1-5%","6-10%","11-20%","1-5%","6-10%","Above 20%","6-10%","Nothing","11-20%","6-10%","1-5%","1-5%","6-10%","Nothing","1-5%","1-5%","6-10%","6-10%","1-5%","1-5%","6-10%","Nothing","6-10%","1-5%","6-10%","6-10%","1-5%","6-10%","11-20%","1-5%","1-5%","11-20%","6-10%","6-10%","Above 20%","1-5%","1-5%","6-10%","1-5%","1-5%","6-10%","6-10%","6-10%","Nothing","6-10%","Nothing","Nothing","1-5%","11-20%","11-20%","6-10%","6-10%","Nothing","6-10%","Above 20%","Nothing","6-10%","11-20%","1-5%","6-10%","6-10%","11-20%","6-10%","1-5%","1-5%","11-20%","1-5%","Nothing","6-10%","6-10%","11-20%","6-10%","6-10%","1-5%","1-5%","6-10%","6-10%","1-5%","Nothing","6-10%","11-20%","6-10%","1-5%","Above 20%","1-5%","6-10%","1-5%","1-5%","1-5%","6-10%","11-20%","1-5%","1-5%","1-5%","6-10%","6-10%","Nothing","6-10%","Nothing","6-10%","Nothing","6-10%","Above 20%","1-5%","11-20%","1-5%","1-5%","1-5%","6-10%","11-20%","6-10%","6-10%","6-10%","1-5%","6-10%","1-5%","1-5%","6-10%","Nothing","1-5%","1-5%","1-5%","Nothing","6-10%","11-20%","Nothing","Nothing","6-10%","1-5%","6-10%","11-20%","Nothing","11-20%","1-5%","6-10%","6-10%","1-5%","1-5%","1-5%","1-5%","1-5%","6-10%","1-5%","11-20%","6-10%","11-20%","11-20%","6-10%","Above 20%","11-20%","11-20%","Nothing","6-10%","11-20%","6-10%","1-5%"]},{"c":"C_Q23","q":"Would you pay extra for a BLDC ceiling fan that uses about half the electricity?","t":"Choice","o":["Nothing","1-10%","11-25%","26-50%","Above 50%"],"v":["11-25%","26-50%","26-50%","Above 50%","11-25%","11-25%","26-50%","11-25%","11-25%","26-50%","11-25%","1-10%","1-10%","1-10%","11-25%","11-25%","11-25%","26-50%","Above 50%","Above 50%","26-50%","26-50%","Nothing","11-25%","Nothing","1-10%","11-25%","1-10%","Above 50%","Nothing","11-25%","11-25%","Nothing","26-50%","26-50%","1-10%","26-50%","Above 50%","11-25%","Nothing","11-25%","1-10%","11-25%","11-25%","26-50%","1-10%","1-10%","Nothing","26-50%","26-50%","26-50%","1-10%","11-25%","1-10%","11-25%","1-10%","1-10%","11-25%","11-25%","11-25%","11-25%","11-25%","1-10%","26-50%","1-10%","11-25%","11-25%","26-50%","11-25%","26-50%","11-25%","Above 50%","11-25%","26-50%","26-50%","11-25%","26-50%","26-50%","11-25%","11-25%","Above 50%","11-25%","1-10%","1-10%","11-25%","Above 50%","1-10%","11-25%","11-25%","11-25%","11-25%","11-25%","11-25%","11-25%","11-25%","1-10%","11-25%","Above 50%","11-25%","11-25%","1-10%","1-10%","26-50%","11-25%","26-50%","26-50%","11-25%","1-10%","26-50%","1-10%","11-25%","Above 50%","11-25%","1-10%","1-10%","11-25%","11-25%","26-50%","26-50%","11-25%","26-50%","26-50%","11-25%","11-25%","11-25%","11-25%","Nothing","11-25%","26-50%","1-10%","26-50%","11-25%","1-10%","Above 50%","11-25%","11-25%","1-10%","26-50%","Nothing","1-10%","1-10%","26-50%","1-10%","26-50%","11-25%","Nothing","Above 50%","26-50%","11-25%","26-50%","26-50%","Above 50%","26-50%","11-25%","1-10%","1-10%","11-25%","11-25%","11-25%","26-50%","11-25%","26-50%","11-25%","26-50%","Nothing","26-50%","Nothing","Nothing","11-25%","1-10%","11-25%","11-25%","26-50%","1-10%","Nothing","26-50%","26-50%","1-10%","11-25%","26-50%","Nothing","11-25%","26-50%","26-50%","26-50%","11-25%","11-25%","1-10%","1-10%","11-25%","26-50%","Nothing","11-25%","1-10%","1-10%","26-50%","26-50%","11-25%","26-50%","11-25%","Nothing","1-10%","1-10%","Above 50%","11-25%","26-50%","11-25%","1-10%","Nothing","26-50%","1-10%","26-50%","1-10%","26-50%","26-50%","26-50%","11-25%","26-50%","26-50%","1-10%","1-10%","11-25%","1-10%","11-25%","11-25%","11-25%","26-50%","1-10%","26-50%","Nothing","26-50%","Above 50%","26-50%","1-10%","1-10%","26-50%","11-25%","11-25%","11-25%","1-10%","11-25%","Above 50%","1-10%","11-25%","26-50%","11-25%","11-25%","1-10%","1-10%","26-50%"]},{"c":"C_Q24","q":"How many V-Guard products do you currently own?","t":"Choice","o":["None","1","2","3","4 or more"],"v":["4 or more","3","3","None","2","2","1","1","1","3","3","1","3","1","4 or more","2","4 or more","2","4 or more","2","None","2","2","2","3","1","3","3","3","3","2","4 or more","2","3","None","1","2","None","4 or more","1","1","1","2","4 or more","2","None","4 or more","2","None","1","3","2","2","1","1","1","2","1","1","4 or more","3","1","2","4 or more","None","2","3","4 or more","2","3","None","2","2","2","None","3","2","None","2","3","4 or more","3","2","1","1","2","None","1","2","1","4 or more","1","3","4 or more","2","2","2","None","1","1","4 or more","1","4 or more","3","1","1","3","None","2","2","3","3","3","1","2","None","4 or more","2","4 or more","2","None","3","3","2","2","3","3","3","3","2","3","4 or more","None","1","4 or more","4 or more","4 or more","1","1","2","2","2","4 or more","1","1","4 or more","3","1","1","None","2","2","4 or more","4 or more","1","2","3","3","4 or more","2","1","2","3","1","None","1","2","1","4 or more","3","1","None","None","2","3","2","1","3","2","2","3","4 or more","1","3","2","4 or more","1","4 or more","3","2","4 or more","2","1","1","1","2","2","3","None","3","3","3","1","2","3","4 or more","3","1","3","3","2","3","3","1","4 or more","1","3","4 or more","3","2","1","2","4 or more","1","4 or more","3","3","None","2","1","4 or more","4 or more","3","3","None","None","4 or more","2","3","4 or more","2","2","2","4 or more","1","None","None","1","2","2"]},{"c":"C_Q25","q":"How likely are you to recommend V-Guard to a friend or neighbour?","t":"Number 0-10","o":null,"v":[9,9,8,7,10,9,7,8,7,7,10,10,8,7,7,7,8,8,10,8,7,8,6,8,9,8,8,7,6,7,7,6,8,8,6,7,8,7,7,7,7,9,8,8,6,8,8,6,7,8,10,7,9,8,8,7,6,8,8,9,8,8,8,8,6,8,7,7,8,10,6,9,6,7,5,10,7,7,6,9,7,7,8,9,5,9,7,4,10,9,9,7,10,10,7,8,9,8,6,6,9,5,10,9,9,5,10,6,9,8,8,7,5,8,7,6,10,7,8,7,7,7,8,7,8,7,10,9,8,7,8,6,8,6,8,8,8,9,7,8,7,7,8,7,7,7,8,5,9,6,8,6,8,9,5,7,8,7,10,7,9,8,8,9,3,7,6,7,10,8,5,6,4,7,9,6,6,9,8,7,7,10,6,8,9,8,7,8,8,8,10,7,6,7,5,8,10,6,7,6,9,10,8,8,9,10,10,6,9,6,8,10,7,7,7,9,9,8,9,7,7,9,7,9,10,6,10,8,8,8,9,8,9,7,5,9,10,9,10,8,9,8,6,7,8,8,9,10,8,8]}]}};</script>
+<script>
+(function(){
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const inr=n=>Math.round(n).toLocaleString('en-IN');
+const pct=(x,d=1)=>(x*100).toFixed(d)+'%';
+const R0=x=>Math.round(x+1e-9), R3=x=>Math.round((x+1e-12)*1000)/1000;
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!==undefined)e.textContent=text;if(parent)parent.appendChild(e);return e;}
+
+/* ---------- theme ---------- */
+const themeBtn=$('#themeBtn');
+function currentDark(){const t=document.documentElement.getAttribute('data-theme');if(t)return t==='dark';return window.matchMedia('(prefers-color-scheme: dark)').matches;}
+function setThemeLabel(){themeBtn.textContent=currentDark()?'Light mode':'Dark mode';}
+try{const saved=localStorage.getItem('vg-theme');if(saved)document.documentElement.setAttribute('data-theme',saved);}catch(e){}
+setThemeLabel();
+themeBtn.addEventListener('click',()=>{const next=currentDark()?'light':'dark';document.documentElement.setAttribute('data-theme',next);try{localStorage.setItem('vg-theme',next);}catch(e){}setThemeLabel();drawAll();});
+
+/* ---------- Right-to-Win ---------- */
+const DIMS=[
+ {k:'fin',name:'Financial attractiveness',max:30,w:30,bands:['ROCE below the cost of capital','ROCE 12–18%, EBIT margin under 10%','ROCE above 18% and EBIT margin above 12%']},
+ {k:'rtw',name:'Right to win with the buyer',max:25,w:25,bands:['No credibility with the buyer, no channel, no manufacturing','Two of the three: buyer credibility, channel, manufacturing','Buyer credibility, channel access and manufacturing all present']},
+ {k:'mkt',name:'Market attractiveness',max:20,w:20,bands:['Under 5% growth, or shrinking','5–10% growth','Above 10% growth with a structural or policy tailwind']},
+ {k:'adj',name:'Capability adjacency',max:15,w:15,bands:['Needs a new plant, channel and capability','Reuses either manufacturing or channel','Reuses existing manufacturing, channel and service']},
+ {k:'res',name:'Resilience and sustainability',max:10,w:10,bands:['Weather- or commodity-dependent, no ESG link','Partly seasonal','Counter-seasonal, or efficiency-linked with a regulatory tailwind']}
+];
+const REPORT_ROWS=[
+ ['Wires and cables (premium mix)',24,22,17,14,8,'est'],['Backup, digital UPS and inverters',24,23,16,14,7,'est'],
+ ['Solar component kit (B2B)',22,20,18,14,9,'new'],['Switchgear and modular switches',23,21,16,14,8,'est'],
+ ['Premium and BLDC fans',21,20,16,13,8,'est'],['Water heaters',22,21,14,13,7,'est'],['Solar DC cable',20,17,17,13,9,'new'],
+ ['Sunflame (kitchen)',14,15,14,10,6,'est'],['Hero kitchen categories',15,14,13,10,6,'est'],['Lighting',12,12,15,9,6,'new'],
+ ['Low-value stabiliser SKUs',11,14,8,10,5,'est'],['Air coolers (weak geographies)',10,13,10,10,4,'est'],['Economy fan tail',9,12,9,10,4,'est']
+].map(r=>({name:r[0],s:r.slice(1,6),pos:r[6],src:'report'}));
+
+let board=[...REPORT_ROWS];
+try{const saved=JSON.parse(localStorage.getItem('vg-rtw-board')||'[]');if(Array.isArray(saved))saved.forEach(r=>{if(r&&r.name&&Array.isArray(r.s))board.push({name:String(r.name),s:r.s.map(Number),pos:r.pos==='new'?'new':'est',src:'judge'});});}catch(e){}
+function saveBoard(){try{localStorage.setItem('vg-rtw-board',JSON.stringify(board.filter(r=>r.src==='judge')));}catch(e){}}
+
+function verdictFor(total,pos){
+  if(total>=75)return pos==='est'?{t:'FOCUS',c:'v-focus',why:'Clears the bar with an existing strength: fund it and defend it.'}:{t:'ENTER',c:'v-enter',why:'Clears the bar where V-Guard is small today: enter with capital.'};
+  if(total>=55)return {t:'FIX',c:'v-fix',why:'Below the bar but within reach: fund a 24-month path, with a hard test at the end.'};
+  return pos==='est'?{t:'HARVEST',c:'v-harvest',why:'Below 55 as an established business: run it for cash, or exit.'}:{t:'PILOT ONLY',c:'v-pilot',why:'Below 55 with no position today: a pilot may finish, but no capital for scale.'};
+}
+function weightsAt(w){const f=(100-w)/75;return [30*f,w,20*f,15*f,10*f];}
+function totalAt(s,w){const ws=weightsAt(w);return s.reduce((a,v,i)=>a+v/DIMS[i].max*ws[i],0);}
+function band(t){return t>=75?2:t>=55?1:0;}
+
+const dimsBox=$('#dims');
+DIMS.forEach((d,i)=>{
+  const wrap=document.createElement('div');wrap.className='dim';
+  wrap.innerHTML=`<div class="dim-top"><b id="lbl_${d.k}">${d.name}</b><span class="pts"><span id="v_${d.k}">0</span><small> / ${d.max}</small></span></div>
+  <input type="range" id="r_${d.k}" min="0" max="${d.max}" step="1" value="0" aria-labelledby="lbl_${d.k}">
+  <div class="hint" id="h_${d.k}"></div>`;
+  dimsBox.appendChild(wrap);
+  wrap.querySelector('input').addEventListener('input',updateMeter);
+});
+// ticks
+(function(){const g=$('#ticks');[0,25,55,75,100].forEach(v=>{const a=Math.PI*(1-v/100);const x1=150+122*Math.cos(a),y1=150-122*Math.sin(a),x2=150+132*Math.cos(a),y2=150-132*Math.sin(a);el('line',{x1,y1,x2,y2,style:'stroke:var(--muted)','stroke-width':2},g);const tx=150+146*Math.cos(a),ty=150-146*Math.sin(a)+4;el('text',{x:tx,y:ty,'text-anchor':'middle','font-size':11,style:'fill:var(--muted)','font-family':'Libre Franklin, sans-serif'},g,String(v));});})();
+
+function readScores(){return DIMS.map(d=>+$('#r_'+d.k).value);}
+function updateMeter(){
+  const s=readScores();const total=s.reduce((a,b)=>a+b,0);
+  DIMS.forEach((d,i)=>{$('#v_'+d.k).textContent=s[i];const f=s[i]/d.max;$('#h_'+d.k).textContent=d.bands[f<0.4?0:f<0.7?1:2];});
+  $('#total').textContent=total;
+  $('#needle').style.transform=`rotate(${-90+total*1.8}deg)`;
+  const v=verdictFor(total,$('#position').value);
+  const vd=$('#verdict');vd.textContent=v.t;vd.className='verdict '+v.c;$('#why').textContent=v.why;
+  $('#miniScore').innerHTML=`Score <b>${total}</b> of 100, verdict <span class="chip ${v.c}">${v.t}</span>`;
+}
+$('#position').addEventListener('change',updateMeter);
+function loadRow(r){$('#catName').value=r.name;$('#position').value=r.pos;DIMS.forEach((d,i)=>$('#r_'+d.k).value=r.s[i]);updateMeter();document.getElementById('rtw').scrollIntoView({block:'start'});}
+$('#clearBtn').addEventListener('click',()=>{$('#catName').value='';$('#position').value='new';DIMS.forEach(d=>$('#r_'+d.k).value=Math.round(d.max/2));updateMeter();$('#catName').focus();});
+$('#addBtn').addEventListener('click',()=>{
+  const name=$('#catName').value.trim();
+  if(!name){$('#catName').focus();$('#catName').placeholder='Name the category before adding it';return;}
+  const row={name,s:readScores(),pos:$('#position').value,src:'judge'};
+  const i=board.findIndex(r=>r.src==='judge'&&r.name.toLowerCase()===name.toLowerCase());
+  if(i>=0)board[i]=row;else board.push(row);
+  saveBoard();renderBoard();
+});
+
+function renderBoard(){
+  const w=+$('#rtwW').value;$('#stressHead').textContent='At '+w+'%';
+  const rows=[...board].sort((a,b)=>b.s.reduce((x,y)=>x+y,0)-a.s.reduce((x,y)=>x+y,0));
+  const tb=$('#board tbody');tb.innerHTML='';let changes=0;
+  rows.forEach(r=>{
+    const total=r.s.reduce((a,b)=>a+b,0);const v=verdictFor(total,r.pos);const st=totalAt(r.s,w);
+    const holds=band(st)===band(total);if(!holds)changes++;
+    const tr=document.createElement('tr');tr.className='clickable';tr.tabIndex=0;
+    tr.innerHTML=`<td>${r.name.replace(/</g,'&lt;')}<span class="tag-src">${r.src==='report'?'report':'yours'}</span></td>${r.s.map(x=>`<td>${x}</td>`).join('')}<td><b>${total}</b></td><td><span class="chip ${v.c}">${v.t}</span></td><td>${st.toFixed(1)}${holds?'':' <span class="chip v-harvest">changes</span>'}</td><td>${r.src==='judge'?'<button class="rm" type="button">Remove</button>':''}</td>`;
+    tr.addEventListener('click',e=>{if(e.target.classList.contains('rm')){board=board.filter(x=>x!==r);saveBoard();renderBoard();return;}loadRow(r);});
+    tr.addEventListener('keydown',e=>{if(e.key==='Enter')loadRow(r);});
+    tb.appendChild(tr);
+  });
+  $('#stressOut').textContent=changes===0?`At ${w}%, every verdict holds.`:`At ${w}%, ${changes} verdict${changes>1?'s':''} change${changes>1?'':'s'}.`;
+}
+$('#rtwW').addEventListener('input',renderBoard);
+
+/* ---------- FY31 data ---------- */
+const ENGINES=[
+ ['Continuing core','--blue',[4346,4900,5530,6220,7010,7895]],
+ ['Backup, batteries, storage','--amber',[850,960,1090,1250,1450,1703]],
+ ['Solar components','--green',[120,175,265,360,450,547]],
+ ['Sunflame','--red',[250,290,360,480,610,750]],
+ ['Services','--grey',[0,20,55,95,140,182]],
+ ['Being exited','--light',[400,300,180,80,20,0]]
+];
+const YEARS=['FY26','FY27','FY28','FY29','FY30','FY31'];
+const PL=[['Revenue',[5966,6645,7480,8485,9680,11077],'n'],['EBITDA',[527,665,800,959,1142,1361],'n'],
+ ['EBITDA margin',[8.8,10.0,10.7,11.3,11.8,12.3],'p'],['EBIT',[427,555,680,829,1002,1211],'n'],['Capex',[174,165,160,190,215,225],'n']];
+(function(){const tb=$('#pl');PL.forEach(([n,v,t])=>{const tr=document.createElement('tr');if(n==='Revenue')tr.style.fontWeight='600';tr.innerHTML=`<td>${n}</td>`+v.map(x=>`<td>${t==='p'?x.toFixed(1)+'%':inr(x)}</td>`).join('');tb.appendChild(tr);});})();
+
+function drawBridge(){
+  const svg=$('#bridge');svg.innerHTML='';
+  const o=compute(ST),steps=o.bridge;
+  const W=900,H=330,L=48,B=280,T=24,max=Math.max(12000,Math.ceil(Math.max(o.rev,5966+o.coreVol-4346+o.premRev+o.backup-850+o.sol.solar-120+ST.sun-250+o.services)/2000)*2000),bw=66,gap=(W-L-20-bw*steps.length)/(steps.length-1);
+  const y=v=>B-(v/max)*(B-T);
+  [0,max/3,2*max/3,max].forEach(v=>{el('line',{x1:L,x2:W-10,y1:y(v),y2:y(v),class:'axis'},svg);el('text',{x:L-8,y:y(v)+4,'text-anchor':'end',class:'lbl'},svg,v===0?'0':(Math.round(v/100)/10)+'k');});
+  let run=0;
+  steps.forEach(([lab,v,kind],i)=>{
+    const x=L+10+i*(bw+gap);let y0,y1,fill;
+    if(kind==='t'){y0=y(v);y1=y(0);fill=css('--bar-total');run=v;}
+    else{const a=run,b=run+v;y0=y(Math.max(a,b));y1=y(Math.min(a,b));fill=v<0?css('--red'):css('--amber');run=b;}
+    el('rect',{x,y:y0,width:bw,height:Math.max(1,y1-y0),fill,rx:1},svg);
+    if(i>0&&i<steps.length){}
+    el('text',{x:x+bw/2,y:y0-7,'text-anchor':'middle','font-size':13,'font-weight':600},svg,(kind==='d'&&v>0?'+':v<0?'−':'')+inr(Math.abs(v)));
+    el('text',{x:x+bw/2,y:B+18,'text-anchor':'middle',class:'lbl','font-size':12},svg,lab);
+  });
+}
+function drawStack(){
+  const svg=$('#stack');svg.innerHTML='';const W=520,B=260,T=16,L=44,max=12000;const y=v=>B-(v/max)*(B-T);
+  [0,4000,8000,12000].forEach(v=>{el('line',{x1:L,x2:W-6,y1:y(v),y2:y(v),class:'axis'},svg);el('text',{x:L-8,y:y(v)+4,'text-anchor':'end',class:'lbl'},svg,v===0?'0':(v/1000)+'k');});
+  const bw=46,step=(W-L-20)/6;
+  YEARS.forEach((yr,j)=>{let acc=0;const x=L+10+j*step+(step-bw)/2-4;
+    ENGINES.forEach(([n,c,v])=>{const val=v[j];if(!val)return;el('rect',{x,y:y(acc+val),width:bw,height:y(acc)-y(acc+val),fill:css(c)},svg);acc+=val;});
+    el('text',{x:x+bw/2,y:y(acc)-6,'text-anchor':'middle','font-size':11,'font-weight':600},svg,inr(acc));
+    el('text',{x:x+bw/2,y:B+18,'text-anchor':'middle',class:'lbl'},svg,yr);});
+  $('#stackLegend').innerHTML=ENGINES.map(([n,c])=>`<span><i style="background:var(${c})"></i>${n}</span>`).join('');
+}
+function drawRoce(){
+  const svg=$('#roceChart');svg.innerHTML='';
+  const rows=[['Plan',33.4],['Working capital at 60 days',31.3],['Working capital at 65 days',30.1],['Sunflame divested',30.3],['EBITDA margin held to 11%',29.5],['Integrated downside',26.3]];
+  const W=520,L=190,R=40,T=10,rh=40,max=40;const x=v=>L+(v/max)*(W-L-R);
+  [0,10,20,30,40].forEach(v=>{el('line',{x1:x(v),x2:x(v),y1:T,y2:T+rows.length*rh,class:'axis'},svg);el('text',{x:x(v),y:T+rows.length*rh+16,'text-anchor':'middle',class:'lbl'},svg,v+'%');});
+  rows.forEach(([n,v],i)=>{const yy=T+i*rh+9;el('text',{x:L-10,y:yy+15,'text-anchor':'end','font-size':12.5},svg,n);
+    el('rect',{x:L,y:yy,width:x(v)-L,height:22,fill:i===0?css('--bar-total'):css('--blue'),rx:1},svg);
+    el('text',{x:x(v)+6,y:yy+16,'font-size':12.5,'font-weight':600},svg,v.toFixed(1)+'%');});
+  el('line',{x1:x(24),x2:x(24),y1:T-4,y2:T+rows.length*rh+2,stroke:css('--red'),'stroke-width':2,'stroke-dasharray':'5 4'},svg);
+  el('text',{x:x(24),y:T+rows.length*rh+32,'text-anchor':'middle','font-size':12,fill:css('--red'),'font-weight':600},svg,'24% floor');
+  svg.setAttribute('viewBox',`0 0 ${W} ${T+rows.length*rh+40}`);
+}
+
+/* ---------- one shared state; mirrors the Excel model exactly at plan ---------- */
+const PLAN_STATE={active:2000,sys:150,wallet:0.45,coreCagr:0.12,premPts:9,backupF:1,sun:750,svc:0.10,util:0.78,storage:true};
+const ST={...PLAN_STATE};
+const UPLIFT=(130*1400/1800+260*300/1500+80*70/120+79*3000/6500)/549;
+function solarModel(active,sys,wallet){
+  const kits=Math.floor(active*sys*wallet+1e-9),resRev=R0(kits*24000/1e7),solar=resRev+144+79;
+  const segs=[[resRev,.28,.071],[144,.24,.055],[79,.285,.082]];
+  const gm=R3(segs.reduce((a,s)=>a+s[0]*s[1],0)/solar),below=R3(segs.reduce((a,s)=>a+s[0]*s[2],0)/solar);
+  const ebitda=R0(solar*gm)-R0(solar*below)-20,ebit=ebitda-R0(203/8),ce=167+R0(solar*45/365);
+  return {kits,resRev,solar,gm,ebitPc:ebit/solar,roce:ebit/ce,share:solar/7710};
+}
+function compute(S){
+  const sol=solarModel(S.active,S.sys,S.wallet);
+  const coreVol=R0(4346*Math.pow(1+S.coreCagr,5));
+  const shift=549*S.premPts/9, premRev=R0(shift*UPLIFT);
+  const premE=R0((shift+premRev)*0.41)-R0(shift*0.32)-R0(premRev*0.25);
+  const backup=850+R0(651*S.backupF)+(S.storage?202:0);
+  const services=R0(14e6*S.svc*1300/1e7);
+  const rev=coreVol+premRev+backup+sol.solar+S.sun+services;
+  const premBps=R0(10000*premE/rev), utilBps=R0(130*(1-0.59/S.util)/(1-0.59/0.78)), sunBps=R0(50*(S.sun-250)/500);
+  const m=0.088+(utilBps+premBps+60+sunBps+60-30)/10000;
+  const ebitda=R0(rev*m), ebit=ebitda-150, ce=1725+R0(rev*52/365)+325;
+  return {sol,coreVol,premRev,backup,services,rev,m,ebitda,ebit,ce,roce:ebit/ce,cagr:Math.pow(rev/5966,0.2)-1,
+    bridge:[['FY26',5966,'t'],['Core growth',coreVol-4346,'d'],['Premium',premRev,'d'],['Backup',backup-850,'d'],['Solar',sol.solar-120,'d'],['Sunflame',S.sun-250,'d'],['Services',services,'d'],['Exits',-400,'d'],['FY31',rev,'t']]};
+}
+const PLAN_OUT=compute(PLAN_STATE);
+function deltaTag(v,base,fmt){const d=v-base;if(Math.abs(d)<1e-9)return '';return ` <span class="delta ${d>0?'up':'down'}">${d>0?'+':'−'}${fmt(Math.abs(d))} vs plan</span>`;}
+function refresh(){updateSolar();updateBuilder();drawBridge();}
+
+function updateSolar(){
+  $('#s_active').value=ST.active;$('#s_sys').value=ST.sys;$('#s_wallet').value=Math.round(ST.wallet*100);
+  $('#o_active').textContent=inr(ST.active);$('#o_sys').textContent=ST.sys;$('#o_wallet').textContent=Math.round(ST.wallet*100)+'%';
+  const o=compute(ST),s=o.sol;
+  $('#r_kits').textContent=inr(s.kits);$('#r_solar').textContent='₹'+inr(s.solar)+' Cr';$('#r_share').textContent=pct(s.share);
+  $('#r_sebit').textContent=pct(s.ebitPc);$('#r_sroce').textContent=pct(s.roce);$('#r_rev').textContent='₹'+inr(o.rev)+' Cr';$('#r_roce').textContent=pct(o.roce);
+  const lamps=[[s.gm>=0.25,`Blended gross margin ${pct(s.gm)}, gate 25%`],[s.ebitPc>=0.12,`Solar EBIT margin ${pct(s.ebitPc)}, gate 12%`],[s.roce>=0.18,`Solar ROCE ${pct(s.roce)}, gate 18%`],[o.roce>0.24,`Group ROCE ${pct(o.roce)}, commitment 24%`]];
+  $('#lamps').innerHTML=lamps.map(([ok,t])=>`<div class="lamp ${ok?'on':'off'}"><i aria-hidden="true"></i><span>${ok?'Clears':'Fails'}: ${t}</span></div>`).join('');
+}
+$('#s_active').addEventListener('input',e=>{ST.active=+e.target.value;refresh();});
+$('#s_sys').addEventListener('input',e=>{ST.sys=+e.target.value;refresh();});
+$('#s_wallet').addEventListener('input',e=>{ST.wallet=+e.target.value/100;refresh();});
+$('#solarReset').addEventListener('click',()=>{ST.active=2000;ST.sys=150;ST.wallet=0.45;refresh();});
+
+const BIND=[['#b_core','coreCagr',v=>v/100],['#b_prem','premPts',v=>v],['#b_bk','backupF',v=>v/100],['#b_sun','sun',v=>v],['#b_svc','svc',v=>v/100],['#b_util','util',v=>v/100]];
+BIND.forEach(([id,k,conv])=>$(id).addEventListener('input',e=>{ST[k]=conv(+e.target.value);refresh();}));
+$('#b_store').addEventListener('change',e=>{ST.storage=e.target.checked;refresh();});
+$('#b_reset').addEventListener('click',()=>{Object.assign(ST,{coreCagr:.12,premPts:9,backupF:1,sun:750,svc:.10,util:.78,storage:true});refresh();});
+function updateBuilder(){
+  $('#b_core').value=ST.coreCagr*100;$('#b_prem').value=ST.premPts;$('#b_bk').value=Math.round(ST.backupF*100);$('#b_sun').value=ST.sun;$('#b_svc').value=Math.round(ST.svc*100);$('#b_util').value=Math.round(ST.util*100);$('#b_store').checked=ST.storage;
+  $('#bo_core').textContent=(ST.coreCagr*100).toFixed(1)+'%';$('#bo_prem').textContent='+'+ST.premPts+' pts';$('#bo_bk').textContent=Math.round(ST.backupF*100)+'%';
+  $('#bo_sun').textContent='₹'+inr(ST.sun)+' Cr';$('#bo_svc').textContent=Math.round(ST.svc*100)+'%';$('#bo_util').textContent=Math.round(ST.util*100)+'%';
+  const o=compute(ST),P=PLAN_OUT;$('#bo_solar').textContent='₹'+inr(o.sol.solar)+' crore';
+  const cr=x=>'₹'+inr(x)+' Cr';
+  $('#bb_rev').innerHTML=cr(o.rev)+deltaTag(o.rev,P.rev,inr);
+  $('#bb_cagr').innerHTML=pct(o.cagr);
+  $('#bb_m').innerHTML=pct(o.m)+deltaTag(Math.round(o.m*10000),Math.round(P.m*10000),x=>x+' bps');
+  $('#bb_ebitda').innerHTML=cr(o.ebitda)+deltaTag(o.ebitda,P.ebitda,inr);
+  $('#bb_ebit').innerHTML=cr(o.ebit);$('#bb_ce').innerHTML=cr(o.ce);
+  $('#bb_roce').innerHTML=pct(o.roce);
+  const ok=o.roce>0.24;
+  const mUp=Math.round(o.m*10000)>Math.round(PLAN_OUT.m*10000)&&o.rev<PLAN_OUT.rev;
+  $('#bb_note').textContent=mUp?'Margin edges up here because fixed rupee gains, such as the ₹87 crore premium-mix benefit, now sit on less revenue. Slower growth would usually also leave plants emptier: lower the utilisation lever to see that.':'';
+  $('#bb_lamp').innerHTML=`<div class="lamp ${ok?'on':'off'}"><i aria-hidden="true"></i><span>${ok?'Clears':'Fails'} the 24% commitment by ${Math.abs((o.roce-0.24)*100).toFixed(1)} points</span></div>`;
+  const plan=BIND.every(([id,k,conv])=>Math.abs(ST[k]-PLAN_STATE[k])<1e-9)&&ST.storage&&ST.active===2000&&ST.sys===150&&Math.abs(ST.wallet-.45)<1e-9;
+  $('#bridgeNote').textContent=plan?'₹ crore, at plan. Core volume growth is built category by category: wires at 14.2%, switchgear at 15.5%, stabilisers held to 4.8% and run for cash.':'₹ crore, with your levers. Reset them to return to the plan.';
+}
+
+let UE={claim:0.09,asp:24000};
+function unitEcon(){
+  const asp=UE.asp,gm=asp-16875-400,war=R0(UE.claim*8000),credit=R0(asp*40*0.09/365)+R0(asp*0.008),c=gm-war-20-250-credit-275;
+  $('#s_asp').value=asp;$('#o_asp').textContent='₹'+inr(asp);
+  const prem=asp/23000-1;$('#h_asp').textContent=`${Math.abs(prem)<0.0005?'Level with':prem>0?(prem*100).toFixed(1)+'% above':(Math.abs(prem)*100).toFixed(1)+'% below'} the ₹23,000 imported bundle. ${prem>0.06?'Only 18% of installers accept more than 7%.':prem>=0.04?'60% of installers accept a premium of 4% or more.':'Inside what most installers would accept.'}`;
+  const rows=[['Selling price to installer',inr(asp)],['Bill of materials','(16,875)'],['Logistics','(400)'],['Gross margin',`${inr(gm)} (${(gm/asp*100).toFixed(1)}%)`,'b'],
+   ['Inverter warranty reserve',`(${inr(war)})`],['Other component claims','(20)'],['Service network running cost','(250)'],['Credit, 40 days plus bad-debt provision',`(${inr(credit)})`],['Installer and channel programme','(275)'],
+   ['Contribution',`${inr(c)} (${(c/asp*100).toFixed(1)}%)`,'b']];
+  $('#unit').innerHTML=rows.map(([a,b,k])=>`<tr${k?' class="total"':''}><td>${a}</td><td>${b}</td></tr>`).join('');
+  const L=[[gm/asp>=0.25,`Kit gross margin ${(gm/asp*100).toFixed(1)}%, gate 25%`],[c/asp>=0.18,`Contribution ${(c/asp*100).toFixed(1)}%, gate 18%`]];
+  $('#unitLamps').innerHTML=L.map(([ok,t])=>`<div class="lamp ${ok?'on':'off'}"><i aria-hidden="true"></i><span>${ok?'Clears':'Fails'}: ${t}</span></div>`).join('');
+}
+document.querySelectorAll('[data-claim]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-claim]').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');UE.claim=+b.dataset.claim;unitEcon();}));
+$('#s_asp').addEventListener('input',e=>{UE.asp=+e.target.value;unitEcon();});
+
+/* ---------- DCF (mirrors the Excel model) ---------- */
+const PLAN=[460.475,221.6,269.605,480.49,602.195],SQ=[202.465,226.795,255.36,283.16,315.195];
+function ev(f,nopat,ce,w,g){if(w<=g+0.0005)return NaN;const pv=f.reduce((a,x,i)=>a+x/Math.pow(1+w,i+1),0);const roic=nopat/ce;return pv+nopat*(1+g)*(1-g/roic)/(w-g)/Math.pow(1+w,5);}
+function updateDcf(){
+  const w=+$('#s_w').value/100,g=+$('#s_g').value/100;$('#o_w').textContent=(w*100).toFixed(1)+'%';$('#o_g').textContent=(g*100).toFixed(1)+'%';
+  const p=ev(PLAN,902.195,3628,w,g),q=ev(SQ,455.195,3171,w,g);
+  if(!isFinite(p)||!isFinite(q)){$('#d_plan').textContent='—';$('#d_sq').textContent='—';$('#d_up').textContent='—';$('#d_ps').textContent='Growth after FY31 has to stay below the cost of capital for this method to work. Raise the WACC or lower the growth rate.';return;}
+  $('#d_plan').textContent='₹'+inr(p)+' Cr';$('#d_sq').textContent='₹'+inr(q)+' Cr';$('#d_up').textContent='₹'+inr(p-q)+' Cr';
+  $('#d_ps').innerHTML=`The plan is worth <b>${(p/q).toFixed(1)} times</b> the status quo, or about <b>₹${inr((p+231)/43.7)} a share</b> after adding ₹231 crore of net cash.`;
+  const xm=+$('#s_x').value;$('#o_x').textContent=xm+'×';$('#d_xm').textContent=xm;
+  const pvx=PLAN.reduce((a,x,i)=>a+x/Math.pow(1+w,i+1),0)+xm*1361/Math.pow(1+w,5);
+  $('#d_exit').textContent=`₹${inr(pvx)} crore, or about ₹${inr((pvx+231)/43.7)} a share`;
+  const psP=(p+231)/43.7,psX=(pvx+231)/43.7,lo=Math.min(psP,psX),hi=Math.max(psP,psX);
+  $('#d_between').textContent=(317>=lo&&317<=hi)?"V-Guard's share price of ₹317 in March 2026 sits between the two methods.":`At these settings, V-Guard's share price of ₹317 in March 2026 sits ${317<lo?'below':'above'} both methods.`;
+}
+$('#s_w').addEventListener('input',updateDcf);$('#s_x').addEventListener('input',updateDcf);$('#s_g').addEventListener('input',updateDcf);
+(function(){
+  const gs=[5,5.5,6,6.5,7],ws=[10.7,11.2,11.7,12.2,12.7];
+  let h='<thead><tr><th>WACC</th>'+gs.map(g=>`<th>g ${g}%</th>`).join('')+'</tr></thead><tbody>';
+  ws.forEach(w=>{h+=`<tr><td>${w.toFixed(1)}%</td>`+gs.map(g=>`<td class="${w===11.7&&g===6?'hot':''}">${inr(ev(PLAN,902.195,3628,w/100,g/100))}</td>`).join('')+'</tr>';});
+  $('#grid').innerHTML=h+'</tbody>';
+})();
+
+
+/* ---------- gate checkers ---------- */
+function sunflameGate(){
+  const rev=+$('#sf_rev').value,m=+$('#sf_m').value,cash=$('#sf_cash').value==='1',r=+$('#sf_r').value;
+  const tests=[[rev>=350,`Revenue ₹${inr(rev)} crore, needs ₹350 crore or more`],[m>=8,`Operating margin ${m}%, needs 8% or more`],[cash,`Cash generation ${cash?'positive':'negative'}, needs to be positive`],[r>15,`Return on new capital ${r}%, needs more than 15%`]];
+  $('#sf_lamps').innerHTML=tests.map(([ok,t])=>`<div class="lamp ${ok?'on':'off'}"><i aria-hidden="true"></i><span>${t}</span></div>`).join('');
+  const fails=tests.filter(t=>!t[0]).length;
+  $('#sf_out').className='decision '+(fails?'d-stop':'d-go');
+  $('#sf_out').innerHTML=fails?`<b>Sell Sunflame</b>It misses ${fails} of the 4 tests. The plan divests, accepts the impairment on the ₹660 crore paid, and puts the capital where it earns more. A sunk cost doesn't earn the right to more money.`:`<b>Keep funding it, with one more bar</b>It passes all four FY28 tests. To keep its capital it must then reach the standing 18% return by FY29.`;
+}
+['#sf_rev','#sf_m','#sf_cash','#sf_r'].forEach(id=>$(id).addEventListener('input',sunflameGate));
+function gegadyneGate(){
+  const g=[1,2,3,4].map(i=>$('#gg'+i).checked),n=g.filter(Boolean).length,v=+$('#gg_v').value,cost=(0.51-0.3035)*v;
+  const o=$('#gg_out');
+  if(n<4){o.className='decision d-wait';o.innerHTML=`<b>Don't exercise yet</b>${n} of 4 gates cleared. The option stays open and the ₹250 crore stays unspent. If the gates never clear, V-Guard licenses the technology or buys batteries from more than one supplier, and the rest of the plan is unaffected.`;}
+  else if(v>1200){o.className='decision d-stop';o.innerHTML=`<b>Above the cap: license instead</b>All four gates clear, but a ₹${inr(v)} crore valuation is above the ₹1,200 crore cap. Reaching 51% would cost about ₹${inr(cost)} crore. The plan walks away from a bidding war and licenses or dual-sources.`;}
+  else{o.className='decision d-go';o.innerHTML=`<b>Exercise to 51%</b>All four gates clear and the valuation is within the ₹1,200 crore cap. Taking the stake from 30.35% to 51% costs about ₹${inr(cost)} crore, inside the ₹250 crore set aside.`;}
+}
+['#gg1','#gg2','#gg3','#gg4','#gg_v'].forEach(id=>$(id).addEventListener('input',gegadyneGate));
+['#gg1','#gg2','#gg3','#gg4'].forEach(id=>$(id).addEventListener('change',gegadyneGate));
+
+/* ---------- survey explorer ---------- */
+const catTypes=['Choice','Text','Scale 1-5','Number 0-10'];
+function optsOf(q){
+  if(q.o)return q.o;
+  const vals=[...new Set(q.v.filter(v=>v!==null).map(String))];
+  if(q.t==='Scale 1-5'||q.t==='Number 0-10')return vals.sort((a,b)=>+a-+b);
+  return vals.sort((a,b)=>q.v.filter(v=>String(v)===b).length-q.v.filter(v=>String(v)===a).length);
+}
+function splittable(q){return catTypes.includes(q.t)&&optsOf(q).length<=12;}
+function fillSurveys(){$('#sx_s').innerHTML=Object.entries(SURVEY).map(([k,v])=>`<option value="${k}">${v.label} (n=${v.n})</option>`).join('');}
+function fillQuestions(){
+  const S=SURVEY[$('#sx_s').value];
+  $('#sx_q').innerHTML=S.qs.map((q,i)=>`<option value="${i}">${q.q.replace(/</g,'&lt;')}</option>`).join('');
+  fillSplit();
+}
+function fillSplit(){
+  const S=SURVEY[$('#sx_s').value],qi=+$('#sx_q').value;
+  $('#sx_b').innerHTML='<option value="">No split</option>'+S.qs.map((q,i)=>i!==qi&&splittable(q)?`<option value="${i}">${q.q.replace(/</g,'&lt;')}</option>`:'').join('');
+  renderSurvey();
+}
+function renderSurvey(){
+  const S=SURVEY[$('#sx_s').value],q=S.qs[+$('#sx_q').value],bi=$('#sx_b').value,out=$('#sx_out');
+  const esc=t=>String(t).replace(/</g,'&lt;');
+  const isNum=q.t==='Number';
+  let h=`<div class="sx-q">${esc(q.q)}</div>`;
+  const idx=q.v.map((v,i)=>i).filter(i=>q.v[i]!==null);
+  const summary=(ids)=>{
+    if(isNum){const xs=ids.map(i=>+q.v[i]).sort((a,b)=>a-b);if(!xs.length)return '<p class="muted small">No answers.</p>';
+      const mean=xs.reduce((a,b)=>a+b,0)/xs.length,med=xs.length%2?xs[(xs.length-1)/2]:(xs[xs.length/2-1]+xs[xs.length/2])/2;
+      return `<p><b>Mean ${mean.toFixed(1)}</b>, median ${med}, range ${xs[0]} to ${xs[xs.length-1]}, n=${xs.length}</p>`;}
+    const opts=optsOf(q),n=ids.length;
+    let d='<div class="dist">';
+    opts.forEach(o=>{const c=ids.filter(i=>String(q.v[i])===o).length,p=n?c/n:0;d+=`<span>${esc(o)}</span><span><span class="b" style="display:block;width:${(p*100).toFixed(1)}%"></span></span><span class="n">${c} of ${n}</span><span class="p">${(p*100).toFixed(1)}%</span>`;});
+    d+='</div>';
+    if(q.t==='Scale 1-5'){const xs=ids.map(i=>+q.v[i]);d+=`<p class="small" style="margin-top:12px">Mean ${(xs.reduce((a,b)=>a+b,0)/xs.length).toFixed(2)}, top-two-box ${(xs.filter(x=>x>=4).length/xs.length*100).toFixed(1)}%</p>`;}
+    if(q.t==='Number 0-10'){const xs=ids.map(i=>+q.v[i]);d+=`<p class="small" style="margin-top:12px">Net Promoter Score ${Math.round((xs.filter(x=>x>=9).length-xs.filter(x=>x<=6).length)/xs.length*100)}, mean ${(xs.reduce((a,b)=>a+b,0)/xs.length).toFixed(2)}</p>`;}
+    return d;
+  };
+  if(bi===''){h+=summary(idx);}
+  else{
+    const B=S.qs[+bi],groups=optsOf(B);
+    h+=`<p class="small muted" style="margin:-4px 0 12px">Split by: ${esc(B.q)}</p>`;
+    if(isNum){
+      h+='<div class="tbl-wrap"><table><thead><tr><th>Group</th><th>n</th><th>Mean</th><th>Median</th></tr></thead><tbody>';
+      groups.forEach(g=>{const ids=idx.filter(i=>String(B.v[i])===g),xs=ids.map(i=>+q.v[i]).sort((a,b)=>a-b);if(!xs.length)return;
+        const mean=xs.reduce((a,b)=>a+b,0)/xs.length,med=xs.length%2?xs[(xs.length-1)/2]:(xs[xs.length/2-1]+xs[xs.length/2])/2;
+        h+=`<tr><td>${esc(g)}</td><td>${xs.length}</td><td>${mean.toFixed(1)}</td><td>${med}</td></tr>`;});
+      h+='</tbody></table></div>';
+    }else{
+      const opts=optsOf(q);
+      const scoreQ=(q.t==='Scale 1-5'||q.t==='Number 0-10');
+      h+='<div class="tbl-wrap"><table><thead><tr><th>Group</th><th>n</th>'+(scoreQ?'<th>Mean</th>':'')+opts.map(o=>`<th>${esc(o)}</th>`).join('')+'</tr></thead><tbody>';
+      groups.forEach(g=>{const ids=idx.filter(i=>String(B.v[i])===g);if(!ids.length)return;
+        h+=`<tr><td>${esc(g)}</td><td>${ids.length}</td>`+(scoreQ?`<td><b>${(ids.reduce((a,i)=>a+(+q.v[i]),0)/ids.length).toFixed(2)}</b></td>`:'')+opts.map(o=>`<td>${(ids.filter(i=>String(q.v[i])===o).length/ids.length*100).toFixed(0)}%</td>`).join('')+'</tr>';});
+      h+='</tbody></table></div><p class="small muted" style="margin-top:10px">Small groups swing a lot. Treat any split with n under 30 as a direction, not a finding.</p>';
+    }
+  }
+  out.innerHTML=h;
+}
+$('#sx_s').addEventListener('change',fillQuestions);$('#sx_q').addEventListener('change',fillSplit);$('#sx_b').addEventListener('change',renderSurvey);
+
+/* ---------- init ---------- */
+function drawAll(){drawBridge();drawStack();drawRoce();}
+drawAll();
+loadRowSilently(board[2]);
+function loadRowSilently(r){$('#catName').value=r.name;$('#position').value=r.pos;DIMS.forEach((d,i)=>$('#r_'+d.k).value=r.s[i]);updateMeter();}
+renderBoard();refresh();unitEcon();updateDcf();sunflameGate();gegadyneGate();fillSurveys();fillQuestions();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{setThemeLabel();drawAll();});
+})();
+</script>
+</body>
+</html>
